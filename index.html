@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BEN 10 — It's Hero Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050605;
+  --deep:#0a0d0a;
+  --metal-0:#0f1110;
+  --metal-1:#1a1d1a;
+  --metal-2:#262a26;
+  --metal-3:#3a3f3a;
+  --metal-edge:#5a605a;
+  --green:#4fdb1f;
+  --green-hot:#a6ff5a;
+  --green-deep:#1f6b0a;
+  --green-mist:rgba(79,219,31,0.18);
+  --bone:#e8ffd8;
+  --ink:#000;
+  --hud:'Chakra Petch', system-ui, sans-serif;
+  --display:'Bungee', system-ui, sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--void);color:var(--bone);font-family:var(--hud);overflow:hidden}
+body{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  position:relative;
+  letter-spacing:.04em;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ───────── Cosmic backdrop: tech grid + starfield ───────── */
+.backdrop{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 40%, #0d1a0d 0%, #050605 55%, #000 100%);
+}
+.grid{
+  position:fixed;inset:-50%;z-index:1;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(79,219,31,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,219,31,0.06) 1px, transparent 1px);
+  background-size:64px 64px;
+  transform:perspective(800px) rotateX(62deg) translateY(20%) scale(1.4);
+  mask-image:radial-gradient(ellipse at 50% 30%, #000 0%, transparent 70%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 30%, #000 0%, transparent 70%);
+  animation:gridSlide 14s linear infinite;
+}
+@keyframes gridSlide{
+  from{background-position:0 0,0 0}
+  to{background-position:0 64px, 64px 0}
+}
+.stars{position:fixed;inset:0;z-index:1;pointer-events:none}
+.stars i{
+  position:absolute;width:2px;height:2px;border-radius:50%;
+  background:var(--bone);opacity:.5;box-shadow:0 0 6px var(--bone);
+  animation:twinkle 3.6s infinite ease-in-out;
+}
+@keyframes twinkle{
+  0%,100%{opacity:.15;transform:scale(.8)}
+  50%{opacity:.9;transform:scale(1.2)}
+}
+
+/* Floating "Kirby dot" particles — bloom out on flash */
+.kirby{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity .4s}
+body.flashing .kirby{opacity:1}
+.kirby b{
+  position:absolute;
+  width:var(--s);height:var(--s);
+  left:50%;top:50%;
+  background:#000;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);
+  box-shadow:0 0 0 2px rgba(0,0,0,.6);
+  animation:kirbyBurst 1.6s var(--d) cubic-bezier(.2,.7,.2,1) paused forwards;
+}
+body.flashing .kirby b{animation-play-state:running}
+@keyframes kirbyBurst{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:0}
+  20%{opacity:1}
+  100%{transform:translate(-50%,-50%) translate(var(--tx),var(--ty)) scale(1);opacity:.85}
+}
+
+/* ───────── Stage ───────── */
+.stage{
+  position:relative;z-index:5;
+  width:min(560px, 92vw);
+  aspect-ratio:1/1;
+  display:grid;place-items:center;
+}
+
+/* The activation hint */
+.hint{
+  position:absolute;
+  bottom:-72px;left:50%;transform:translateX(-50%);
+  font-family:var(--hud);font-weight:600;font-size:13px;letter-spacing:.42em;
+  color:var(--bone);opacity:.6;
+  display:flex;align-items:center;gap:14px;
+  white-space:nowrap;
+  animation:hintBreathe 2.4s ease-in-out infinite;
+}
+.hint::before,.hint::after{
+  content:"";display:block;width:28px;height:1px;background:var(--green);
+  box-shadow:0 0 8px var(--green);
+}
+body.activated .hint{opacity:0;transition:opacity .3s}
+@keyframes hintBreathe{
+  0%,100%{opacity:.4}
+  50%{opacity:.85}
+}
+
+/* Skip / Replay control */
+.audio-toggle{
+  position:fixed;top:24px;right:24px;z-index:50;
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.3em;
+  padding:10px 14px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  transition:all .2s;
+}
+.audio-toggle:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
+.audio-toggle .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ff4040;margin-right:8px;vertical-align:middle;box-shadow:0 0 6px #ff4040}
+.audio-toggle.on .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* ───────── Omnitrix watch ───────── */
+.watch{
+  position:relative;
+  width:78%;aspect-ratio:1/1;
+  display:grid;place-items:center;
+  cursor:pointer;
+  transition:transform .4s cubic-bezier(.4,1.6,.6,1);
+}
+.watch:hover{transform:scale(1.02)}
+body.activated .watch{cursor:default;pointer-events:none;animation:watchLift 1.4s ease-out forwards}
+@keyframes watchLift{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.06) translateY(-4px)}
+  100%{transform:scale(1.1) translateY(0)}
+}
+
+/* Wrist band (top + bottom strap fragments) */
+.band{position:absolute;left:50%;width:62%;height:18%;background:
+  linear-gradient(180deg,#0e100e 0%, #1a1d1a 35%, #060706 100%);
+  border:1px solid #000;border-radius:14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    inset 0 -2px 8px rgba(0,0,0,.8),
+    0 0 0 1px rgba(90,96,90,.12);
+}
+.band.top{top:-2%;transform:translateX(-50%) perspective(400px) rotateX(28deg)}
+.band.bot{bottom:-2%;transform:translateX(-50%) perspective(400px) rotateX(-28deg)}
+.band::before,.band::after{
+  content:"";position:absolute;left:8%;right:8%;height:3px;
+  background:linear-gradient(90deg,transparent,#3a3f3a 12%,#3a3f3a 88%,transparent);
+  opacity:.4;
+}
+.band::before{top:30%}
+.band::after{bottom:30%}
+/* glow tubing */
+.tubing{position:absolute;left:0;right:0;height:2px;background:var(--green);box-shadow:0 0 10px var(--green),0 0 20px var(--green-mist);opacity:.6}
+.band.top .tubing{bottom:18%}
+.band.bot .tubing{top:18%}
+
+/* Watch body (the chunky bezel) */
+.body-ring{
+  position:relative;
+  width:72%;aspect-ratio:1/1;border-radius:50%;
+  background:
+    radial-gradient(circle at 30% 25%, #2a2e2a 0%, #1a1d1a 30%, #0c0e0c 70%, #050605 100%);
+  box-shadow:
+    inset 0 4px 12px rgba(255,255,255,.04),
+    inset 0 -8px 22px rgba(0,0,0,.9),
+    0 18px 40px rgba(0,0,0,.7),
+    0 0 0 2px #000;
+}
+/* Beveled inner ring */
+.bezel{
+  position:absolute;inset:8%;border-radius:50%;
+  background:
+    conic-gradient(from 0deg, #1a1d1a, #2e332e, #1a1d1a, #2e332e, #1a1d1a);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,.06),
+    inset 0 -4px 12px rgba(0,0,0,.8);
+}
+/* Notches around the bezel — mechanical detail (CSS-only) */
+.notches{
+  position:absolute;inset:6%;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,
+    rgba(0,0,0,.7) 0deg 1.2deg,
+    transparent 1.2deg 10deg);
+  -webkit-mask:radial-gradient(circle, transparent 0%, transparent 84%, #000 86%, #000 96%, transparent 98%);
+  mask:radial-gradient(circle, transparent 0%, transparent 84%, #000 86%, #000 96%, transparent 98%);
+  opacity:.8;
+}
+
+/* The four iconic rim lights — N/E/S/W */
+.rim-light{
+  position:absolute;
+  width:9%;aspect-ratio:1/1;border-radius:50%;
+  background:radial-gradient(circle, var(--green-hot) 0%, var(--green) 40%, var(--green-deep) 80%, #000 100%);
+  box-shadow:
+    0 0 12px var(--green),
+    0 0 24px var(--green-mist),
+    inset 0 0 4px rgba(0,0,0,.6);
+  opacity:.55;
+  transition:opacity .3s;
+}
+.rim-light::after{
+  content:"";position:absolute;inset:22%;border-radius:50%;
+  background:radial-gradient(circle, var(--bone) 0%, transparent 70%);
+  opacity:.7;
+}
+.rim-light.n{top:11%;left:50%;transform:translateX(-50%)}
+.rim-light.e{right:11%;top:50%;transform:translateY(-50%)}
+.rim-light.s{bottom:11%;left:50%;transform:translateX(-50%)}
+.rim-light.w{left:11%;top:50%;transform:translateY(-50%)}
+
+body.activated .rim-light{animation:rimPulse .4s ease-out forwards;animation-delay:.1s}
+body.activated .rim-light.e{animation-delay:.2s}
+body.activated .rim-light.s{animation-delay:.3s}
+body.activated .rim-light.w{animation-delay:.4s}
+@keyframes rimPulse{
+  0%{opacity:.55;filter:brightness(1)}
+  50%{opacity:1;filter:brightness(1.8) saturate(1.4)}
+  100%{opacity:1;filter:brightness(1.4)}
+}
+
+/* The face / dial (the part that pops UP) */
+.face-mount{
+  position:absolute;inset:24%;
+  display:grid;place-items:center;
+  perspective:600px;
+}
+.face{
+  position:relative;
+  width:100%;height:100%;border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%, #141714 0%, #0a0c0a 60%, #050605 100%);
+  box-shadow:
+    inset 0 0 0 3px #000,
+    inset 0 0 0 5px #1a1d1a,
+    inset 0 0 24px rgba(0,0,0,.9),
+    0 6px 18px rgba(0,0,0,.6);
+  display:grid;place-items:center;
+  transform-style:preserve-3d;
+  transition:transform .9s cubic-bezier(.4,1.6,.6,1), box-shadow .6s;
+}
+/* Inner green outline ring on the face */
+.face::before{
+  content:"";position:absolute;inset:6%;border-radius:50%;
+  border:2px solid var(--green-deep);
+  box-shadow:inset 0 0 14px rgba(79,219,31,.12);
+  transition:all .5s;
+}
+body.activated .face{
+  transform:translateZ(40px) translateY(-10px);
+  box-shadow:
+    inset 0 0 0 3px #000,
+    inset 0 0 0 5px var(--green-deep),
+    inset 0 0 36px rgba(79,219,31,.4),
+    0 30px 60px rgba(0,0,0,.8),
+    0 0 80px var(--green-mist);
+}
+body.activated .face::before{
+  border-color:var(--green);
+  box-shadow:inset 0 0 30px rgba(79,219,31,.5), 0 0 20px var(--green-mist);
+}
+
+/* The shape inside the dial — hourglass made of two triangles */
+.shape{
+  position:relative;width:56%;height:56%;
+  display:grid;place-items:center;
+}
+.tri{
+  position:absolute;left:50%;top:50%;
+  width:0;height:0;
+  transform-origin:50% 50%;
+  transition:transform 1.1s cubic-bezier(.65,.05,.35,1), filter .8s;
+  filter:drop-shadow(0 0 6px var(--green)) drop-shadow(0 0 14px var(--green-mist));
+}
+/* Triangle pointing DOWN (top half of hourglass) — base at top, apex meeting at y=0 */
+.tri.up{
+  border-left:60px solid transparent;
+  border-right:60px solid transparent;
+  border-top:80px solid var(--green);
+  transform:translate(-50%, -80px);
+}
+/* Triangle pointing UP (bottom half of hourglass) — base at bottom, apex meeting at y=0 */
+.tri.dn{
+  border-left:60px solid transparent;
+  border-right:60px solid transparent;
+  border-bottom:80px solid var(--green);
+  transform:translate(-50%, 0px);
+}
+/* Inversion to diamond — the iconic moment.
+   Both triangles rotate 180° (flip). Same translate position →
+   bases meet at y=0, apexes point outward. */
+body.activated .tri.up{
+  transform:translate(-50%, -80px) rotate(180deg);
+  filter:drop-shadow(0 0 12px var(--green-hot)) drop-shadow(0 0 24px var(--green));
+  transition-delay:1.3s;
+}
+body.activated .tri.dn{
+  transform:translate(-50%, 0px) rotate(180deg);
+  filter:drop-shadow(0 0 12px var(--green-hot)) drop-shadow(0 0 24px var(--green));
+  transition-delay:1.3s;
+}
+
+/* Idle pulse on the hourglass */
+@keyframes hourglassPulse{
+  0%,100%{filter:drop-shadow(0 0 6px var(--green)) drop-shadow(0 0 14px var(--green-mist))}
+  50%{filter:drop-shadow(0 0 14px var(--green-hot)) drop-shadow(0 0 30px var(--green))}
+}
+body:not(.activated) .tri{animation:hourglassPulse 2.6s ease-in-out infinite}
+
+/* Alien silhouette stage — appears inside diamond during cycle phase */
+.silhouettes{
+  position:absolute;inset:0;display:grid;place-items:center;
+  opacity:0;transform:scale(.6);
+  transition:opacity .35s, transform .5s;
+  z-index:3;pointer-events:none;
+}
+body.activated .silhouettes{
+  opacity:1;transform:scale(1);
+  transition-delay:2.5s;
+}
+.silhouettes img{
+  position:absolute;width:46%;height:46%;
+  opacity:0;
+  filter:drop-shadow(0 0 8px var(--green-hot)) drop-shadow(0 0 16px var(--green));
+}
+body.activated .silhouettes img{animation:alienCycle .22s ease-out forwards}
+body.activated .silhouettes img:nth-child(1){animation-delay:2.60s}
+body.activated .silhouettes img:nth-child(2){animation-delay:2.78s}
+body.activated .silhouettes img:nth-child(3){animation-delay:2.96s}
+body.activated .silhouettes img:nth-child(4){animation-delay:3.14s}
+body.activated .silhouettes img:nth-child(5){animation-delay:3.32s}
+body.activated .silhouettes img:nth-child(6){animation-delay:3.50s}
+body.activated .silhouettes img:nth-child(7){animation-delay:3.68s}
+body.activated .silhouettes img:nth-child(8){animation-delay:3.86s}
+body.activated .silhouettes img:nth-child(9){animation-delay:4.04s}
+body.activated .silhouettes img:nth-child(10){animation-delay:4.22s}
+@keyframes alienCycle{
+  0%{opacity:0;transform:scale(.7) rotate(-8deg)}
+  30%{opacity:1;transform:scale(1.05) rotate(0)}
+  70%{opacity:1;transform:scale(1) rotate(0)}
+  100%{opacity:0;transform:scale(1.15) rotate(8deg)}
+}
+
+/* The white-green flash burst */
+.flash{
+  position:fixed;inset:0;z-index:10;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, var(--bone) 0%, var(--green-hot) 18%, var(--green) 35%, transparent 70%);
+  opacity:0;transform:scale(.2);
+  mix-blend-mode:screen;
+}
+body.activated .flash{animation:flashBurst 1.2s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:4.4s}
+@keyframes flashBurst{
+  0%{opacity:0;transform:scale(.2)}
+  30%{opacity:1;transform:scale(1.4)}
+  60%{opacity:.95;transform:scale(2.2)}
+  100%{opacity:0;transform:scale(3)}
+}
+
+/* Ring shockwave */
+.shockwave{
+  position:fixed;left:50%;top:50%;
+  width:40px;height:40px;border-radius:50%;
+  border:3px solid var(--green-hot);
+  transform:translate(-50%,-50%) scale(0);
+  z-index:9;pointer-events:none;opacity:0;
+  box-shadow:0 0 30px var(--green);
+}
+body.activated .shockwave{animation:shock 1.4s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:4.4s}
+body.activated .shockwave.two{animation-delay:4.55s;border-color:var(--green)}
+@keyframes shock{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:.9}
+  100%{transform:translate(-50%,-50%) scale(40);opacity:0}
+}
+
+/* ───────── Hero landing (revealed after flash) ───────── */
+.hero{
+  position:fixed;inset:0;z-index:8;
+  display:grid;place-items:center;
+  pointer-events:none;opacity:0;
+  transition:opacity .8s ease-out;
+}
+body.revealed .hero{opacity:1;pointer-events:auto;transition-delay:.1s}
+body.revealed .stage{opacity:0;transition:opacity .5s;pointer-events:none}
+
+.hero-inner{
+  display:grid;place-items:center;gap:48px;
+  text-align:center;
+  padding:40px 24px;
+}
+.brand{
+  position:relative;
+  font-family:var(--display);
+  font-size:clamp(80px, 18vw, 240px);
+  line-height:.85;
+  letter-spacing:.02em;
+  color:var(--green);
+  text-shadow:
+    0 0 18px var(--green),
+    0 0 48px var(--green-deep),
+    6px 6px 0 #000,
+    -2px -2px 0 #000;
+  -webkit-text-stroke:2px #000;
+  transform:translateY(20px);opacity:0;
+}
+body.revealed .brand{
+  animation:slamIn .9s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:.3s;
+}
+@keyframes slamIn{
+  0%{opacity:0;transform:translateY(40px) scale(.85)}
+  60%{opacity:1;transform:translateY(-6px) scale(1.04)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+.brand .num{
+  display:inline-block;color:var(--bone);
+  text-shadow:0 0 18px var(--bone), 0 0 36px var(--green), 6px 6px 0 #000;
+}
+.brand::after{
+  content:"";position:absolute;left:-12px;right:-12px;top:-14px;bottom:-14px;
+  border:2px solid var(--green);
+  border-image:linear-gradient(135deg, var(--green), transparent 30%, transparent 70%, var(--green)) 1;
+  opacity:.4;pointer-events:none;
+}
+
+.tagline{
+  font-family:var(--hud);
+  font-weight:700;font-size:clamp(13px, 1.6vw, 18px);
+  letter-spacing:.6em;
+  color:var(--bone);
+  opacity:0;transform:translateY(10px);
+  display:flex;align-items:center;gap:18px;
+  white-space:nowrap;
+}
+.tagline::before,.tagline::after{
+  content:"";display:block;height:1px;width:40px;background:var(--green);
+  box-shadow:0 0 8px var(--green);
+}
+body.revealed .tagline{animation:fadeUp .7s ease-out forwards;animation-delay:.8s}
+@keyframes fadeUp{to{opacity:.9;transform:translateY(0)}}
+
+.nav{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  margin-top:8px;
+}
+.nav a{
+  position:relative;
+  font-family:var(--hud);font-weight:600;font-size:13px;letter-spacing:.42em;
+  color:var(--bone);text-decoration:none;
+  padding:14px 28px;
+  border:1px solid var(--metal-3);
+  background:rgba(10,13,10,.6);
+  backdrop-filter:blur(6px);
+  transition:all .25s;
+  opacity:0;transform:translateY(8px);
+  text-transform:uppercase;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+}
+.nav a:hover{
+  border-color:var(--green);color:var(--green);
+  box-shadow:0 0 14px var(--green-mist), inset 0 0 14px var(--green-mist);
+}
+body.revealed .nav a{animation:fadeUp .6s ease-out forwards}
+body.revealed .nav a:nth-child(1){animation-delay:1.0s}
+body.revealed .nav a:nth-child(2){animation-delay:1.12s}
+body.revealed .nav a:nth-child(3){animation-delay:1.24s}
+body.revealed .nav a:nth-child(4){animation-delay:1.36s}
+
+/* corner HUD chrome */
+.hud-corner{
+  position:fixed;z-index:9;
+  font-family:var(--hud);font-size:10px;font-weight:600;letter-spacing:.4em;
+  color:var(--green);opacity:0;
+  transition:opacity .6s;
+}
+body.revealed .hud-corner{opacity:.7;transition-delay:1.3s}
+.hud-corner.tl{top:24px;left:24px}
+.hud-corner.bl{bottom:24px;left:24px}
+.hud-corner.br{bottom:24px;right:24px}
+.hud-corner span{display:block;color:var(--bone);opacity:.5;font-weight:400}
+
+/* Replay watch — tiny omnitrix in the corner that re-triggers */
+.replay{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  z-index:9;opacity:0;pointer-events:none;
+  transition:opacity .5s;
+}
+body.revealed .replay{opacity:1;pointer-events:auto;transition-delay:1.4s}
+.replay button{
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.36em;
+  padding:10px 16px 10px 36px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  position:relative;
+  transition:all .2s;
+}
+.replay button::before{
+  content:"";position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle, var(--green-hot) 0%, var(--green) 50%, var(--green-deep) 100%);
+  box-shadow:0 0 8px var(--green);
+  animation:replayPulse 2s ease-in-out infinite;
+}
+@keyframes replayPulse{50%{box-shadow:0 0 16px var(--green-hot)}}
+.replay button:hover{border-color:var(--green);color:var(--green)}
+
+/* HUD scanline overlay */
+.scanlines{
+  position:fixed;inset:0;z-index:20;pointer-events:none;
+  background:repeating-linear-gradient(180deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.18) 3px, rgba(0,0,0,0) 4px);
+  mix-blend-mode:multiply;opacity:.6;
+}
+.vignette{
+  position:fixed;inset:0;z-index:20;pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.7) 100%);
+}
+
+/* ═════════ Aliens Gallery — Omnitrix Dial ═════════ */
+.aliens-page{
+  position:fixed;inset:0;z-index:7;
+  display:grid;place-items:center;
+  pointer-events:none;opacity:0;
+  transition:opacity .5s ease-out;
+  padding:80px 24px 40px;
+  overflow:hidden;
+}
+body.viewing-aliens .aliens-page{opacity:1;pointer-events:auto;transition-delay:.3s}
+body.viewing-aliens .hero{opacity:0;pointer-events:none;transition-delay:0s}
+body.viewing-aliens .replay{opacity:0;pointer-events:none;transition-delay:0s}
+body.viewing-aliens .hud-corner{opacity:0;transition-delay:0s}
+
+.aliens-header{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  z-index:9;
+  font-family:var(--hud);font-weight:600;font-size:12px;letter-spacing:.5em;
+  color:var(--bone);opacity:0;
+  display:flex;align-items:center;gap:18px;
+  white-space:nowrap;
+  transition:opacity .5s;
+}
+body.viewing-aliens .aliens-header{opacity:.85;transition-delay:.5s}
+.aliens-header::before,.aliens-header::after{
+  content:"";display:block;width:32px;height:1px;background:var(--green);
+  box-shadow:0 0 8px var(--green);
+}
+.aliens-header b{color:var(--green);font-weight:700}
+
+.back-btn{
+  position:fixed;top:24px;left:24px;z-index:50;
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.32em;
+  padding:10px 16px 10px 28px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  position:fixed;
+  opacity:0;pointer-events:none;
+  transition:all .3s;
+}
+.back-btn::before{
+  content:"";position:absolute;left:12px;top:50%;
+  width:8px;height:8px;border-left:2px solid var(--green);border-bottom:2px solid var(--green);
+  transform:translateY(-50%) rotate(45deg);
+}
+.back-btn:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
+body.viewing-aliens .back-btn{opacity:1;pointer-events:auto;transition-delay:.5s}
+
+.dial{
+  position:relative;
+  --dial-size:min(720px, 86vmin);
+  --radius:calc(var(--dial-size) * 0.4);
+  width:var(--dial-size);
+  aspect-ratio:1/1;
+  display:grid;place-items:center;
+}
+/* Outer rings of the dial */
+.dial::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:1px solid var(--green-deep);
+  box-shadow:inset 0 0 30px var(--green-mist), 0 0 40px rgba(79,219,31,.08);
+  opacity:.7;
+}
+.dial::after{
+  content:"";position:absolute;inset:8%;border-radius:50%;
+  border:1px dashed var(--green-deep);opacity:.35;
+  animation:dialRingSpin 80s linear infinite;
+}
+@keyframes dialRingSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* Selector arm — wraps the pointer and rotates around dial center */
+.dial-pointer-arm{
+  position:absolute;inset:0;
+  transform:rotate(var(--pointer-angle, 0deg));
+  transition:transform .6s cubic-bezier(.4,1.4,.5,1);
+  pointer-events:none;
+  z-index:4;
+}
+.dial-pointer{
+  position:absolute;left:50%;top:1%;
+  width:0;height:0;
+  border-left:14px solid transparent;border-right:14px solid transparent;
+  border-top:22px solid var(--green-hot);
+  transform:translateX(-50%);
+  filter:drop-shadow(0 0 10px var(--green-hot)) drop-shadow(0 0 22px var(--green));
+}
+
+/* Alien slots — arranged in a ring */
+.slot{
+  position:absolute;left:50%;top:50%;
+  width:96px;height:96px;
+  margin:-48px 0 0 -48px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;
+  cursor:pointer;
+  background:none;border:none;color:var(--bone);
+  font-family:var(--hud);
+  --angle:0deg;
+  transform:
+    rotate(var(--angle))
+    translateY(calc(-1 * var(--radius)))
+    rotate(calc(-1 * var(--angle)));
+  transition:filter .3s, opacity .3s;
+  opacity:0;
+  z-index:3;
+}
+body.viewing-aliens .slot{opacity:1;animation:slotIn .6s ease-out forwards}
+body.viewing-aliens .slot:nth-child(1){animation-delay:.5s}
+body.viewing-aliens .slot:nth-child(2){animation-delay:.56s}
+body.viewing-aliens .slot:nth-child(3){animation-delay:.62s}
+body.viewing-aliens .slot:nth-child(4){animation-delay:.68s}
+body.viewing-aliens .slot:nth-child(5){animation-delay:.74s}
+body.viewing-aliens .slot:nth-child(6){animation-delay:.80s}
+body.viewing-aliens .slot:nth-child(7){animation-delay:.86s}
+body.viewing-aliens .slot:nth-child(8){animation-delay:.92s}
+body.viewing-aliens .slot:nth-child(9){animation-delay:.98s}
+body.viewing-aliens .slot:nth-child(10){animation-delay:1.04s}
+@keyframes slotIn{
+  from{opacity:0;filter:brightness(.4)}
+  to{opacity:1;filter:brightness(1)}
+}
+
+.slot-disc{
+  width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #1a1d1a 0%, #0c0e0c 70%, #050605 100%);
+  border:2px solid var(--metal-3);
+  display:grid;place-items:center;
+  box-shadow:inset 0 0 12px rgba(0,0,0,.8), 0 4px 14px rgba(0,0,0,.5);
+  transition:all .3s;
+  overflow:hidden;
+}
+.slot:hover .slot-disc{
+  border-color:var(--green);
+  box-shadow:inset 0 0 16px rgba(79,219,31,.25), 0 0 18px var(--green-mist);
+  transform:scale(1.06);
+}
+.slot.active .slot-disc{
+  border-color:var(--green-hot);
+  background:radial-gradient(circle, #1a3d0e 0%, #0a1f04 70%, #050605 100%);
+  box-shadow:inset 0 0 20px var(--green-mist), 0 0 24px var(--green), 0 0 48px var(--green-deep);
+  transform:scale(1.12);
+}
+/* Silhouette renderer — pre-rendered PNG dial-style silhouettes shown as-is */
+.alien-art{
+  width:100%;height:100%;
+  object-fit:contain;
+  display:block;
+  transition:filter .3s, transform .3s;
+}
+.slot:hover .alien-art{filter:brightness(1.15) drop-shadow(0 0 8px var(--green-hot))}
+.slot.active .alien-art{filter:brightness(1.2) drop-shadow(0 0 12px var(--green-hot))}
+
+.slot-name{
+  display:block;margin-top:6px;
+  font-size:10px;font-weight:600;letter-spacing:.24em;
+  color:var(--bone);opacity:.7;
+  text-shadow:0 0 8px var(--ink);
+  transition:all .25s;
+}
+.slot:hover .slot-name,.slot.active .slot-name{color:var(--green);opacity:1}
+
+/* Center detail panel */
+.center-panel{
+  position:relative;
+  width:46%;aspect-ratio:1/1;border-radius:50%;
+  background:radial-gradient(circle, rgba(10,13,10,.92) 0%, rgba(10,13,10,.7) 70%, transparent 100%);
+  border:2px solid var(--green-deep);
+  box-shadow:
+    inset 0 0 40px rgba(79,219,31,.12),
+    inset 0 0 0 6px rgba(0,0,0,.4),
+    0 0 60px rgba(0,0,0,.6);
+  display:grid;place-items:center;
+  z-index:2;
+}
+.center-panel::before{
+  content:"";position:absolute;inset:6%;border-radius:50%;
+  border:1px solid var(--green-deep);opacity:.5;
+}
+.center-panel::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from -90deg, var(--green) 0%, transparent 10%, transparent 90%, var(--green) 100%);
+  opacity:.15;
+  animation:centerSweep 6s linear infinite;
+  -webkit-mask:radial-gradient(circle, transparent 60%, #000 62%, #000 68%, transparent 70%);
+  mask:radial-gradient(circle, transparent 60%, #000 62%, #000 68%, transparent 70%);
+}
+@keyframes centerSweep{to{transform:rotate(360deg)}}
+
+.center-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:78%;height:78%;
+  text-align:center;
+  padding:14px 8px;
+}
+/* The big silhouette behind the text */
+.center-art{
+  position:absolute;inset:14%;
+  display:grid;place-items:center;
+  opacity:.22;
+  pointer-events:none;
+  z-index:1;
+}
+.center-art .alien-art{
+  width:96%;height:96%;
+  filter:drop-shadow(0 0 20px var(--green));
+}
+.center-num{
+  font-family:var(--hud);font-weight:700;font-size:11px;letter-spacing:.5em;
+  color:var(--green);opacity:.85;
+  margin-bottom:6px;
+}
+.center-num::before{content:"◆ "}
+.center-num::after{content:" ◆"}
+.center-name{
+  font-family:var(--display);
+  font-size:clamp(20px, 3.4vmin, 36px);
+  line-height:1;color:var(--bone);
+  letter-spacing:.04em;
+  text-shadow:0 0 14px var(--green), 0 0 28px var(--green-deep), 2px 2px 0 #000;
+  margin-bottom:10px;
+}
+.center-divider{
+  width:60%;height:1px;background:linear-gradient(90deg, transparent, var(--green), transparent);
+  margin:6px 0 10px;opacity:.7;
+}
+.center-stat{
+  display:flex;flex-direction:column;align-items:center;
+  margin-bottom:8px;line-height:1.2;
+}
+.center-stat .label{
+  font-family:var(--hud);font-weight:600;font-size:9px;letter-spacing:.4em;
+  color:var(--green);opacity:.75;
+}
+.center-stat .value{
+  font-family:var(--hud);font-weight:500;font-size:clamp(10px, 1.6vmin, 13px);letter-spacing:.18em;
+  color:var(--bone);text-transform:uppercase;
+}
+.engage-btn{
+  margin-top:14px;
+  background:transparent;
+  border:1.5px solid var(--green);
+  color:var(--green);
+  font-family:var(--hud);font-weight:700;font-size:clamp(10px, 1.4vmin, 12px);letter-spacing:.36em;
+  padding:10px 18px;cursor:pointer;
+  text-transform:uppercase;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+  transition:all .2s;
+}
+.engage-btn:hover{
+  background:var(--green);color:var(--ink);
+  box-shadow:0 0 18px var(--green-hot), 0 0 36px var(--green-mist);
+}
+.engage-btn::before{content:"▸ "}
+
+/* Bottom controls */
+.dial-controls{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  z-index:9;display:flex;align-items:center;gap:14px;
+  opacity:0;transition:opacity .5s;
+}
+body.viewing-aliens .dial-controls{opacity:1;transition-delay:.7s}
+.dial-controls button{
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.32em;
+  padding:10px 16px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  transition:all .2s;
+}
+.dial-controls button:hover{border-color:var(--green);color:var(--green)}
+.dial-controls .index{
+  color:var(--green);font-family:var(--hud);font-weight:700;font-size:11px;letter-spacing:.36em;
+  padding:0 14px;min-width:80px;text-align:center;
+}
+
+/* ENGAGE flash effect on the dial itself */
+body.engaging .center-panel{
+  animation:engageFlash 1.2s ease-out;
+}
+@keyframes engageFlash{
+  0%{box-shadow:inset 0 0 40px rgba(79,219,31,.12), inset 0 0 0 6px rgba(0,0,0,.4), 0 0 60px rgba(0,0,0,.6)}
+  20%{box-shadow:inset 0 0 80px var(--green-hot), inset 0 0 0 6px var(--green), 0 0 120px var(--green), 0 0 240px var(--green-hot)}
+  100%{box-shadow:inset 0 0 40px rgba(79,219,31,.12), inset 0 0 0 6px rgba(0,0,0,.4), 0 0 60px rgba(0,0,0,.6)}
+}
+body.engaging .center-name{animation:engageName 1.2s ease-out}
+@keyframes engageName{
+  0%,100%{transform:scale(1)}
+  30%{transform:scale(1.08)}
+}
+
+@media (max-width: 520px){
+  .tri.up{border-left-width:42px;border-right-width:42px;border-top-width:56px;transform:translate(-50%,-56px)}
+  .tri.dn{border-left-width:42px;border-right-width:42px;border-bottom-width:56px;transform:translate(-50%,0)}
+  body.activated .tri.up{transform:translate(-50%,-56px) rotate(180deg)}
+  body.activated .tri.dn{transform:translate(-50%,0) rotate(180deg)}
+  .hint{font-size:11px;letter-spacing:.32em;bottom:-56px}
+  .hud-corner{font-size:8px}
+  .slot{width:72px;height:72px;margin:-36px 0 0 -36px}
+  .slot-disc{width:54px;height:54px}
+  .slot-disc svg{width:38px;height:38px}
+  .slot-name{font-size:8px;letter-spacing:.18em}
+  .center-panel{width:54%}
+  .aliens-header{font-size:10px;letter-spacing:.32em}
+  .aliens-header::before,.aliens-header::after{width:18px}
+}
+
+/* Suppress transitions/animations during initial deep-link boot so we don't flash through states */
+body.boot *,body.boot *::before,body.boot *::after{transition:none !important;animation:none !important}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="backdrop"></div>
+<div class="grid"></div>
+<div class="stars" id="stars"></div>
+<div class="kirby" id="kirby"></div>
+
+<button class="audio-toggle" id="audioToggle" aria-label="Toggle sound">
+  <span class="dot"></span>SOUND OFF
+</button>
+
+<!-- Stage: the watch -->
+<div class="stage" id="stage">
+
+  <div class="watch" id="watch" role="button" tabindex="0" aria-label="Activate Omnitrix">
+
+    <div class="band top"><div class="tubing"></div></div>
+    <div class="band bot"><div class="tubing"></div></div>
+
+    <div class="body-ring">
+      <div class="bezel"></div>
+      <div class="notches" id="notches"></div>
+
+      <div class="rim-light n"></div>
+      <div class="rim-light e"></div>
+      <div class="rim-light s"></div>
+      <div class="rim-light w"></div>
+
+      <div class="face-mount">
+        <div class="face">
+          <div class="shape">
+            <div class="tri up"></div>
+            <div class="tri dn"></div>
+            <div class="silhouettes" id="silhouettes">
+              <img src="assets/aliens/heatblast.png"   alt="" draggable="false">
+              <img src="assets/aliens/wildmutt.png"    alt="" draggable="false">
+              <img src="assets/aliens/diamondhead.png" alt="" draggable="false">
+              <img src="assets/aliens/xlr8.png"        alt="" draggable="false">
+              <img src="assets/aliens/greymatter.png"  alt="" draggable="false">
+              <img src="assets/aliens/fourarms.png"    alt="" draggable="false">
+              <img src="assets/aliens/stinkfly.png"    alt="" draggable="false">
+              <img src="assets/aliens/ripjaws.png"     alt="" draggable="false">
+              <img src="assets/aliens/upgrade.png"     alt="" draggable="false">
+              <img src="assets/aliens/ghostfreak.png"  alt="" draggable="false">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">PRESS TO ACTIVATE</div>
+  </div>
+
+</div>
+
+<div class="shockwave"></div>
+<div class="shockwave two"></div>
+<div class="flash"></div>
+
+<!-- Hero landing (post-flash) -->
+<div class="hero" aria-hidden="true">
+  <div class="hero-inner">
+    <h1 class="brand">BEN<span class="num">10</span></h1>
+    <div class="tagline">IT'S HERO TIME</div>
+    <nav class="nav">
+      <a href="#aliens">Aliens</a>
+      <a href="#episodes">Episodes</a>
+      <a href="#omnitrix">Omnitrix</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</div>
+
+<div class="replay" id="replay">
+  <button id="replayBtn">REPLAY INTRO</button>
+</div>
+
+<!-- Aliens Gallery — Omnitrix Dial view -->
+<button class="back-btn" id="backBtn" aria-label="Back to hero">BACK</button>
+<div class="aliens-header" id="aliensHeader">BEN 10 ARSENAL <b>· 10 / 10 ·</b> ALIEN ARCHIVE</div>
+
+<section class="aliens-page" id="aliensPage" aria-hidden="true">
+  <div class="dial" id="dial">
+    <div class="dial-pointer-arm" id="dialPointer"><div class="dial-pointer"></div></div>
+    <!-- slots injected here by JS -->
+    <div class="center-panel">
+      <div class="center-art" id="centerArt"></div>
+      <div class="center-content" id="centerContent"></div>
+    </div>
+  </div>
+</section>
+
+<div class="dial-controls" id="dialControls">
+  <button id="prevAlien" aria-label="Previous alien">◀ ROTATE</button>
+  <span class="index" id="alienIndex">01 / 10</span>
+  <button id="nextAlien" aria-label="Next alien">ROTATE ▶</button>
+</div>
+
+<div class="hud-corner tl">OMNITRIX <span>v.10.0 / GALVAN TECH</span></div>
+<div class="hud-corner bl">STATUS <span>ACTIVE / LOCKED-ON</span></div>
+<div class="hud-corner br"><span>EARTH / TENNYSON, B.</span> SECTOR 010</div>
+
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<script>
+// ───────── Starfield ─────────
+(function(){
+  const s = document.getElementById('stars');
+  const N = 80;
+  let html = '';
+  for(let i=0;i<N;i++){
+    const x = Math.random()*100, y = Math.random()*100;
+    const d = (Math.random()*3).toFixed(2);
+    const sz = (Math.random()*1.6 + 0.4).toFixed(2);
+    html += `<i style="left:${x}%;top:${y}%;animation-delay:${d}s;width:${sz}px;height:${sz}px"></i>`;
+  }
+  s.innerHTML = html;
+})();
+
+// Bezel notches are pure CSS now (repeating-conic-gradient on .notches)
+
+// ───────── Kirby dots burst ─────────
+function buildKirby(){
+  const k = document.getElementById('kirby');
+  const N = 60;
+  let html = '';
+  for(let i=0;i<N;i++){
+    const ang = Math.random()*Math.PI*2;
+    const dist = 180 + Math.random()*420;
+    const tx = Math.cos(ang)*dist;
+    const ty = Math.sin(ang)*dist;
+    const sz = 6 + Math.random()*22;
+    const d = (Math.random()*0.4).toFixed(2);
+    html += `<b style="--tx:${tx.toFixed(0)}px;--ty:${ty.toFixed(0)}px;--s:${sz.toFixed(0)}px;--d:${d}s"></b>`;
+  }
+  k.innerHTML = html;
+}
+buildKirby();
+
+// ───────── Audio: real mp3 playback ─────────
+let audioEnabled = false;
+let flashTimer = null;
+let cutActivationTimer = null;
+let cutAllTimer = null;
+
+const sndActivation = new Audio('audio/omnitrix-activation.mp3');
+const sndFlash = new Audio('audio/omnitrix-flash.mp3');
+const sndDial = new Audio('audio/dial_turning.mp3');
+[sndActivation, sndFlash, sndDial].forEach(a => {
+  a.preload = 'auto';
+  a.loop = false;
+});
+sndActivation.volume = 0.9;
+sndFlash.volume = 0.85;
+sndDial.volume = 0.7;
+
+// Smooth fade-out helper so cuts don't sound like guillotine drops
+function fadeOut(audio, ms = 350){
+  if(audio.paused) return;
+  const steps = 14;
+  const startVol = audio.volume;
+  let i = 0;
+  const id = setInterval(() => {
+    i++;
+    audio.volume = Math.max(0, startVol * (1 - i/steps));
+    if(i >= steps){
+      clearInterval(id);
+      try{ audio.pause(); audio.currentTime = 0; audio.volume = startVol; }catch(e){}
+    }
+  }, ms/steps);
+}
+
+function playOmnitrixSequence(){
+  if(!audioEnabled) return;
+  clearAudioTimers();
+
+  // Fire activation immediately on click; rewind in case of replay
+  try{ sndActivation.currentTime = 0; sndActivation.play().catch(()=>{}); }catch(e){}
+
+  // Cut activation when the flash visual hits (so long mp3s don't bleed past the burst)
+  cutActivationTimer = setTimeout(() => fadeOut(sndActivation, 250), 4400);
+
+  // Fire the flash/BOOM at the flash moment
+  flashTimer = setTimeout(() => {
+    if(!audioEnabled) return;
+    try{ sndFlash.currentTime = 0; sndFlash.play().catch(()=>{}); }catch(e){}
+  }, 4400);
+
+  // Hard-stop everything once the hero is fully revealed (~6.5s in)
+  cutAllTimer = setTimeout(() => {
+    fadeOut(sndActivation, 250);
+    fadeOut(sndFlash, 500);
+  }, 6500);
+}
+
+function clearAudioTimers(){
+  clearTimeout(flashTimer);
+  clearTimeout(cutActivationTimer);
+  clearTimeout(cutAllTimer);
+}
+
+function stopAllAudio(){
+  clearAudioTimers();
+  const defaults = new Map([[sndActivation, 0.9], [sndFlash, 0.85], [sndDial, 0.7]]);
+  defaults.forEach((vol, a) => {
+    try{ a.pause(); a.currentTime = 0; a.volume = vol; }catch(e){}
+  });
+}
+
+// ───────── Activation flow ─────────
+const body = document.body;
+const watch = document.getElementById('watch');
+const replayBtn = document.getElementById('replayBtn');
+
+function activate(){
+  if(body.classList.contains('activated')) return;
+
+  body.classList.add('activated');
+  playOmnitrixSequence();
+
+  // Flash phase — show the kirby dots
+  setTimeout(() => body.classList.add('flashing'), 4400);
+
+  // Reveal hero — after flash completes
+  setTimeout(() => {
+    body.classList.add('revealed');
+  }, 5400);
+}
+
+function reset(){
+  stopAllAudio();
+  body.classList.remove('activated','flashing','revealed');
+  // Rebuild kirby dots so they re-animate next time
+  setTimeout(buildKirby, 50);
+}
+
+watch.addEventListener('click', activate);
+watch.addEventListener('keydown', e => {
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
+});
+replayBtn.addEventListener('click', () => {
+  reset();
+  setTimeout(activate, 400);
+});
+
+// ───────── Audio toggle ─────────
+const audioToggle = document.getElementById('audioToggle');
+audioToggle.addEventListener('click', () => {
+  audioEnabled = !audioEnabled;
+  audioToggle.classList.toggle('on', audioEnabled);
+  audioToggle.innerHTML = audioEnabled
+    ? '<span class="dot"></span>SOUND ON'
+    : '<span class="dot"></span>SOUND OFF';
+  if(!audioEnabled) stopAllAudio();
+});
+
+// ═════════ Aliens Gallery ═════════
+const ALIENS = [
+  { id:'heatblast',   name:'HEATBLAST',   short:'HEAT',   species:'Pyronite',           planet:'Pyros',         powers:'Fire / Flight',          debut:'S1 · E01', img:'assets/aliens/heatblast.png' },
+  { id:'wildmutt',    name:'WILDMUTT',    short:'WILD',   species:'Vulpimancer',        planet:'Vulpin',        powers:'Senses / Strength',      debut:'S1 · E01', img:'assets/aliens/wildmutt.png' },
+  { id:'diamondhead', name:'DIAMONDHEAD', short:'DIA',    species:'Petrosapien',        planet:'Petropia',      powers:'Crystal / Durability',   debut:'S1 · E01', img:'assets/aliens/diamondhead.png' },
+  { id:'xlr8',        name:'XLR8',        short:'XLR8',   species:'Kineceleran',        planet:'Kinet',         powers:'Super Speed',            debut:'S1 · E02', img:'assets/aliens/xlr8.png' },
+  { id:'greymatter',  name:'GREY MATTER', short:'GREY',   species:'Galvan',             planet:'Galvan Prime',  powers:'Genius Intellect',       debut:'S1 · E03', img:'assets/aliens/greymatter.png' },
+  { id:'fourarms',    name:'FOUR ARMS',   short:'4ARMS',  species:'Tetramand',          planet:'Khoros',        powers:'Strength / Shockwave',   debut:'S1 · E04', img:'assets/aliens/fourarms.png' },
+  { id:'stinkfly',    name:'STINKFLY',    short:'STINK',  species:'Lepidopterran',      planet:'Lepidopterra',  powers:'Flight / Slime',         debut:'S1 · E05', img:'assets/aliens/stinkfly.png' },
+  { id:'ripjaws',     name:'RIPJAWS',     short:'RIP',    species:'Piscciss Volann',    planet:'Piscciss',      powers:'Aquatic / Bite Force',   debut:'S1 · E07', img:'assets/aliens/ripjaws.png' },
+  { id:'upgrade',     name:'UPGRADE',     short:'UPG',    species:'Galvanic Mechamorph',planet:'Galvan B',      powers:'Tech Merging',           debut:'S1 · E08', img:'assets/aliens/upgrade.png' },
+  { id:'ghostfreak',  name:'GHOSTFREAK',  short:'GHOST',  species:'Ectonurite',         planet:'Anur Phaetos',  powers:'Intangibility',          debut:'S1 · E10', img:'assets/aliens/ghostfreak.png' }
+];
+
+let currentAlien = 0;
+let pointerAngle = 0;
+
+function renderDial(){
+  const dial = document.getElementById('dial');
+  const center = dial.querySelector('.center-panel');
+
+  ALIENS.forEach((a, i) => {
+    const angle = i * 36;
+    const slot = document.createElement('button');
+    slot.className = 'slot';
+    slot.style.setProperty('--angle', angle + 'deg');
+    slot.dataset.index = i;
+    slot.setAttribute('aria-label', a.name);
+    slot.innerHTML = `
+      <div class="slot-disc">
+        <img class="alien-art" src="${a.img}" alt="${a.name} silhouette" draggable="false">
+      </div>
+      <span class="slot-name">${a.short}</span>
+    `;
+    slot.addEventListener('click', () => selectAlien(i));
+    dial.insertBefore(slot, center);
+  });
+}
+
+function selectAlien(i){
+  const newIndex = ((i % ALIENS.length) + ALIENS.length) % ALIENS.length;
+  const changed = newIndex !== currentAlien;
+
+  if(changed){
+    // Always rotate the shortest signed direction so wrap (9→0 or 0→9) keeps spinning in the same direction.
+    const targetSlotAngle = newIndex * 36;
+    const currentSlotAngle = ((pointerAngle % 360) + 360) % 360;
+    const diff = ((targetSlotAngle - currentSlotAngle + 540) % 360) - 180;
+    pointerAngle += diff;
+
+    if(audioEnabled){
+      try{ sndDial.currentTime = 0; sndDial.play().catch(()=>{}); }catch(e){}
+    }
+  }
+
+  currentAlien = newIndex;
+  const a = ALIENS[currentAlien];
+
+  document.querySelectorAll('.slot').forEach((s, idx) => {
+    s.classList.toggle('active', idx === currentAlien);
+  });
+
+  const centerContent = document.getElementById('centerContent');
+  centerContent.innerHTML = `
+    <div class="center-num">${String(currentAlien + 1).padStart(2, '0')}</div>
+    <h2 class="center-name">${a.name}</h2>
+    <div class="center-divider"></div>
+    <div class="center-stat">
+      <span class="label">SPECIES</span>
+      <span class="value">${a.species} · ${a.planet}</span>
+    </div>
+    <div class="center-stat">
+      <span class="label">POWER</span>
+      <span class="value">${a.powers}</span>
+    </div>
+    <div class="center-stat">
+      <span class="label">DEBUT · ${a.debut}</span>
+    </div>
+    <button class="engage-btn" id="engageBtn">ENGAGE TRANSFORM</button>
+  `;
+  document.getElementById('centerArt').innerHTML = `<img class="alien-art" src="${a.img}" alt="" draggable="false">`;
+  document.getElementById('alienIndex').textContent = String(currentAlien + 1).padStart(2, '0') + ' / 10';
+  document.getElementById('dialPointer').style.setProperty('--pointer-angle', pointerAngle + 'deg');
+
+  document.getElementById('engageBtn').addEventListener('click', engageTransform);
+}
+
+let engageTimer = null;
+function engageTransform(){
+  clearTimeout(engageTimer);
+  document.body.classList.remove('engaging');
+  void document.body.offsetWidth;
+  document.body.classList.add('engaging');
+  engageTimer = setTimeout(() => document.body.classList.remove('engaging'), 1300);
+
+  if(audioEnabled){
+    try{ sndFlash.currentTime = 0; sndFlash.play().catch(()=>{}); }catch(e){}
+    setTimeout(() => fadeOut(sndFlash, 400), 1800);
+  }
+}
+
+function showAliens(){
+  if(document.body.classList.contains('viewing-aliens')) return;
+  document.body.classList.add('viewing-aliens');
+  selectAlien(currentAlien);
+}
+
+function hideAliens(){
+  document.body.classList.remove('viewing-aliens', 'engaging');
+  fadeOut(sndDial, 200);
+  fadeOut(sndFlash, 250);
+}
+
+renderDial();
+
+// Hook hero nav links — only Aliens is wired for now
+document.querySelectorAll('.nav a').forEach(link => {
+  const href = link.getAttribute('href');
+  if(href === '#aliens'){
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      showAliens();
+      history.replaceState(null, '', '#aliens');
+    });
+  }
+});
+
+// Back button
+document.getElementById('backBtn').addEventListener('click', () => {
+  hideAliens();
+  history.replaceState(null, '', window.location.pathname);
+});
+
+// Prev / Next
+document.getElementById('prevAlien').addEventListener('click', () => selectAlien(currentAlien - 1));
+document.getElementById('nextAlien').addEventListener('click', () => selectAlien(currentAlien + 1));
+
+// Keyboard nav while viewing aliens
+window.addEventListener('keydown', e => {
+  if(!document.body.classList.contains('viewing-aliens')) return;
+  if(e.key === 'ArrowLeft'){ e.preventDefault(); selectAlien(currentAlien - 1); }
+  if(e.key === 'ArrowRight'){ e.preventDefault(); selectAlien(currentAlien + 1); }
+  if(e.key === 'Escape'){ hideAliens(); history.replaceState(null, '', window.location.pathname); }
+});
+
+// Deep-link support: #aliens lands directly on the gallery, no intro
+if(window.location.hash === '#aliens'){
+  document.body.classList.add('boot', 'revealed', 'viewing-aliens');
+  selectAlien(0);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.body.classList.remove('boot');
+  }));
+}
+</script>
+</body>
+</html>
