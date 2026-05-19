@@ -1261,17 +1261,21 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .intro-begin,.intro-skip{font-size:10px;letter-spacing:.24em}
   .intro-skip{right:14px;bottom:14px}
   .crawl-replay{right:14px;bottom:58px}
-  .crawl-perspective{perspective:640px}
-  .crawl-content{width:94vw;bottom:-126vh;transform:rotateX(18deg) translateY(0)}
-  .crawl-episode{font-size:clamp(22px, 6.4vw, 34px);margin-bottom:10px}
-  .crawl-heading{font-size:clamp(38px, 11vw, 64px);margin-bottom:24px}
-  .crawl-content p{font-size:clamp(17px, 5vw, 22px);line-height:1.5;letter-spacing:.04em;margin:0 auto 16px;max-width:92vw}
+  .crawl-perspective{perspective:760px}
+  .crawl-content{width:96vw;bottom:-126vh;transform:rotateX(14deg) translateY(0)}
+  .crawl-episode{font-size:clamp(28px, 7.6vw, 40px);margin-bottom:12px}
+  .crawl-heading{font-size:clamp(46px, 13vw, 76px);margin-bottom:26px}
+  .crawl-content p{font-size:clamp(20px, 5.8vw, 26px);line-height:1.55;letter-spacing:.03em;margin:0 auto 18px;max-width:94vw}
   @keyframes crawlScroll{
-    0%  {transform:rotateX(18deg) translateY(0)}
-    55% {transform:rotateX(18deg) translateY(-130vh)}
-    100%{transform:rotateX(18deg) translateY(-130vh)}
+    0%  {transform:rotateX(14deg) translateY(0)}
+    55% {transform:rotateX(14deg) translateY(-130vh)}
+    100%{transform:rotateX(14deg) translateY(-130vh)}
   }
-  .warp-glyph{--w:clamp(120px, 32vw, 200px)}
+  .warp-glyph{--w:clamp(90px, 26vw, 150px)}
+  .warp-glyph:nth-child(1){transform:translate(0, -34vh)  translateZ(0)      rotateZ(0deg)}
+  .warp-glyph:nth-child(3){transform:translate(36vw, 0)   translateZ(-50px)  rotateZ(90deg)}
+  .warp-glyph:nth-child(5){transform:translate(0, 34vh)   translateZ(-100px) rotateZ(180deg)}
+  .warp-glyph:nth-child(7){transform:translate(-36vw, 0)  translateZ(-50px)  rotateZ(270deg)}
   .warp-glyph:nth-child(2),
   .warp-glyph:nth-child(4),
   .warp-glyph:nth-child(6),
