@@ -117,9 +117,12 @@ body.activated .hint{opacity:0;transition:opacity .3s}
   50%{opacity:.85}
 }
 
-/* Skip / Replay control */
-.audio-toggle{
+/* Top-right controls */
+.control-cluster{
   position:fixed;top:24px;right:24px;z-index:50;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.audio-toggle{
   background:rgba(10,13,10,.7);
   border:1px solid var(--metal-3);
   color:var(--bone);
@@ -131,6 +134,73 @@ body.activated .hint{opacity:0;transition:opacity .3s}
 .audio-toggle:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
 .audio-toggle .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ff4040;margin-right:8px;vertical-align:middle;box-shadow:0 0 6px #ff4040}
 .audio-toggle.on .dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+.voice-control{
+  position:relative;
+  display:flex;flex-direction:column;align-items:flex-end;
+}
+.voice-toggle{
+  min-width:124px;
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:rgba(232,255,216,.72);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.28em;
+  padding:10px 13px 10px 12px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  transition:color .2s, border-color .2s, box-shadow .2s, background .2s;
+  display:flex;align-items:center;gap:9px;justify-content:center;
+}
+.voice-toggle:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
+.voice-toggle[aria-disabled="true"]{cursor:default;color:#ff6f6f;border-color:rgba(255,64,64,.5)}
+.voice-glyph{
+  position:relative;display:inline-block;flex:0 0 auto;
+  width:12px;height:16px;border:2px solid currentColor;border-radius:8px 8px 6px 6px;
+  box-shadow:0 0 8px rgba(232,255,216,.12);
+}
+.voice-glyph::before{
+  content:"";position:absolute;left:50%;bottom:-6px;width:14px;height:8px;
+  border:2px solid currentColor;border-top:0;border-radius:0 0 10px 10px;
+  transform:translateX(-50%);
+}
+.voice-glyph::after{
+  content:"";position:absolute;left:50%;bottom:-11px;width:2px;height:6px;
+  background:currentColor;transform:translateX(-50%);
+}
+.voice-control.on .voice-toggle{border-color:var(--green-deep);color:var(--green)}
+.voice-control.listening .voice-toggle{
+  border-color:var(--green);color:var(--green-hot);
+  box-shadow:0 0 18px var(--green-mist), inset 0 0 18px rgba(79,219,31,.12);
+}
+.voice-control.listening .voice-glyph{animation:micPulse 1.25s ease-in-out infinite}
+.voice-control.heard .voice-toggle{
+  background:rgba(79,219,31,.18);
+  border-color:var(--green-hot);
+  color:var(--green-hot);
+  box-shadow:0 0 22px var(--green), inset 0 0 18px rgba(166,255,90,.18);
+}
+.voice-control.blocked .voice-toggle{
+  color:#ff6f6f;border-color:rgba(255,64,64,.62);
+  box-shadow:0 0 14px rgba(255,64,64,.12);
+}
+.voice-feedback{
+  position:absolute;top:calc(100% + 8px);right:0;
+  min-width:190px;max-width:min(260px, 72vw);
+  padding:8px 10px;
+  background:rgba(5,6,5,.84);
+  border:1px solid rgba(79,219,31,.45);
+  color:var(--green-hot);
+  font-family:var(--hud);font-size:10px;font-weight:700;letter-spacing:.26em;
+  text-align:right;text-transform:uppercase;
+  opacity:0;transform:translateY(-4px);
+  pointer-events:none;
+  box-shadow:0 0 18px rgba(79,219,31,.16);
+  transition:opacity .2s, transform .2s;
+}
+.voice-feedback.show{opacity:1;transform:translateY(0)}
+@keyframes micPulse{
+  0%,100%{filter:drop-shadow(0 0 4px var(--green));transform:scale(1)}
+  50%{filter:drop-shadow(0 0 14px var(--green-hot));transform:scale(1.08)}
+}
 
 /* ───────── Omnitrix watch ───────── */
 .watch{
@@ -489,6 +559,7 @@ body.revealed .nav .nav-item:nth-child(2){animation-delay:1.12s}
 
 .watch:focus-visible,
 .audio-toggle:focus-visible,
+.voice-toggle:focus-visible,
 .nav a:focus-visible,
 .replay button:focus-visible,
 .back-btn:focus-visible,
@@ -947,6 +1018,10 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
 @keyframes dismissFade{to{opacity:.85}}
 
 @media (max-width: 520px){
+  .control-cluster{top:14px;right:14px;gap:6px}
+  .audio-toggle,.voice-toggle{font-size:9px;letter-spacing:.2em;padding:9px 10px}
+  .voice-toggle{min-width:106px}
+  .voice-feedback{min-width:166px;font-size:9px;letter-spacing:.2em}
   .tri.up{border-left-width:42px;border-right-width:42px;border-top-width:56px;transform:translate(-50%,-56px)}
   .tri.dn{border-left-width:42px;border-right-width:42px;border-bottom-width:56px;transform:translate(-50%,0)}
   body.activated .tri.up{transform:translate(-50%,-56px) rotate(180deg)}
@@ -977,9 +1052,18 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 <div class="stars" id="stars"></div>
 <div class="kirby" id="kirby"></div>
 
-<button class="audio-toggle" id="audioToggle" aria-label="Toggle sound">
-  <span class="dot"></span>SOUND OFF
-</button>
+<div class="control-cluster" id="controlCluster">
+  <button class="audio-toggle" id="audioToggle" aria-label="Toggle sound">
+    <span class="dot"></span>SOUND OFF
+  </button>
+  <div class="voice-control" id="voiceControl" hidden aria-hidden="true" inert>
+    <button class="voice-toggle" id="voiceToggle" type="button" aria-label="Turn voice control on" aria-pressed="false">
+      <span class="voice-glyph" aria-hidden="true"></span>
+      <span class="voice-label" id="voiceLabel">VOICE OFF</span>
+    </button>
+    <div class="voice-feedback" id="voiceFeedback" aria-live="polite" aria-atomic="true"></div>
+  </div>
+</div>
 
 <!-- Stage: the watch -->
 <div class="stage" id="stage">
@@ -1196,13 +1280,31 @@ const hero = document.getElementById('hero');
 const replay = document.getElementById('replay');
 const replayBtn = document.getElementById('replayBtn');
 const audioToggle = document.getElementById('audioToggle');
+const voiceControl = document.getElementById('voiceControl');
+const voiceToggle = document.getElementById('voiceToggle');
+const voiceLabel = document.getElementById('voiceLabel');
+const voiceFeedback = document.getElementById('voiceFeedback');
 const backBtn = document.getElementById('backBtn');
 const aliensHeader = document.getElementById('aliensHeader');
 const aliensPage = document.getElementById('aliensPage');
 const dialControls = document.getElementById('dialControls');
 const transformStage = document.getElementById('transformStage');
 const transformDismiss = document.getElementById('transformDismiss');
+const activationHint = document.querySelector('.hint');
 const focusableSelector = 'a[href], button, input, select, textarea, [role="button"], [tabindex]';
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const voiceStorageKey = 'ben10.voiceEnabled';
+
+let voiceSupported = Boolean(SpeechRecognitionCtor);
+let voiceEnabled = false;
+let voiceListening = false;
+let voiceStarting = false;
+let voiceBlocked = false;
+let voiceRecognition = null;
+let voiceRestartTimer = null;
+let voiceFeedbackTimer = null;
+let voiceCooldownUntil = 0;
+let voiceStopExpected = false;
 
 function setElementActive(el, isActive){
   if(!el) return;
@@ -1257,6 +1359,7 @@ function syncA11yState(){
   setElementActive(stage, isIntroVisible);
   setWatchEnabled(isIntroVisible && !body.classList.contains('activated'));
   setElementActive(audioToggle, !isTransforming);
+  setElementActive(voiceControl, voiceSupported && !isTransforming);
   setElementActive(hero, isHeroVisible);
   setElementActive(replay, isHeroVisible);
   setElementActive(aliensPage, isAliensVisible);
@@ -1264,6 +1367,7 @@ function syncA11yState(){
   setElementActive(backBtn, isAliensVisible);
   setElementActive(aliensHeader, isAliensVisible);
   setElementActive(transformStage, isTransforming);
+  updateVoiceLifecycle();
 }
 
 function activate(){
@@ -1326,6 +1430,402 @@ const ALIENS = [
   { id:'upgrade',     name:'UPGRADE',     short:'UPG',    species:'Galvanic Mechamorph',planet:'Galvan B',      powers:'Tech Merging',           debut:'S1 · E08', img:'assets/aliens/upgrade.png' },
   { id:'ghostfreak',  name:'GHOSTFREAK',  short:'GHOST',  species:'Ectonurite',         planet:'Anur Phaetos',  powers:'Intangibility',          debut:'S1 · E10', img:'assets/aliens/ghostfreak.png' }
 ];
+
+const HERO_VOICE_PHRASES = ['its hero time', 'hero time', 'activate'];
+const ALIEN_VOICE_ALIASES = {
+  heatblast: ['heatblast', 'heat blast'],
+  wildmutt: ['wildmutt', 'wild mutt'],
+  diamondhead: ['diamondhead', 'diamond head'],
+  xlr8: ['xlr8', 'xlr 8', 'xlr eight', 'accelerate'],
+  greymatter: ['grey matter', 'gray matter', 'greymatter', 'graymatter'],
+  fourarms: ['four arms', 'fourarms', 'for arms', 'forearms'],
+  stinkfly: ['stinkfly', 'stink fly'],
+  ripjaws: ['ripjaws', 'rip jaws'],
+  upgrade: ['upgrade'],
+  ghostfreak: ['ghostfreak', 'ghost freak']
+};
+
+function readStoredVoicePreference(){
+  try{ return localStorage.getItem(voiceStorageKey) === 'true'; }catch(e){ return false; }
+}
+
+function storeVoicePreference(value){
+  try{ localStorage.setItem(voiceStorageKey, value ? 'true' : 'false'); }catch(e){}
+}
+
+function normalizeVoiceText(text){
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function hasVoicePhrase(normalized, aliases){
+  const haystack = ` ${normalized} `;
+  return aliases.some(alias => haystack.includes(` ${normalizeVoiceText(alias)} `));
+}
+
+function isVoiceActiveScreen(){
+  const idleOmnitrix = !body.classList.contains('activated') && !body.classList.contains('revealed');
+  const aliensDial = body.classList.contains('viewing-aliens') && !body.classList.contains('transforming');
+  return idleOmnitrix || aliensDial;
+}
+
+function shouldVoiceListen(){
+  return voiceSupported
+    && voiceEnabled
+    && !voiceBlocked
+    && isVoiceActiveScreen()
+    && !document.hidden
+    && Date.now() >= voiceCooldownUntil;
+}
+
+function setupVoiceRecognition(){
+  if(!voiceSupported || voiceRecognition) return;
+
+  voiceRecognition = new SpeechRecognitionCtor();
+  voiceRecognition.continuous = true;
+  voiceRecognition.interimResults = false;
+  voiceRecognition.maxAlternatives = 3;
+  voiceRecognition.lang = 'en-US';
+
+  voiceRecognition.onstart = () => {
+    voiceStarting = false;
+    voiceListening = true;
+    updateVoiceUI();
+  };
+
+  voiceRecognition.onend = () => {
+    voiceStarting = false;
+    voiceListening = false;
+    voiceStopExpected = false;
+    updateVoiceUI();
+
+    if(voiceEnabled && !voiceBlocked){
+      const wait = Math.max(250, voiceCooldownUntil - Date.now());
+      scheduleVoiceLifecycle(wait);
+    }
+  };
+
+  voiceRecognition.onerror = event => {
+    const error = event.error || '';
+    voiceStarting = false;
+
+    if(error === 'not-allowed' || error === 'service-not-allowed'){
+      voiceBlocked = true;
+      voiceEnabled = false;
+      storeVoicePreference(false);
+      showVoiceFeedback('MIC BLOCKED', '');
+    }else if(error === 'audio-capture'){
+      voiceBlocked = true;
+      voiceEnabled = false;
+      storeVoicePreference(false);
+      showVoiceFeedback('NO MIC FOUND', '');
+    }else if(error !== 'aborted' || !voiceStopExpected){
+      scheduleVoiceLifecycle(700);
+    }
+
+    updateVoiceUI();
+  };
+
+  voiceRecognition.onresult = event => {
+    if(!voiceEnabled || voiceBlocked) return;
+    if(Date.now() < voiceCooldownUntil) return;
+
+    for(let i = event.resultIndex; i < event.results.length; i++){
+      const result = event.results[i];
+      if(!result.isFinal) continue;
+
+      for(let j = 0; j < result.length; j++){
+        const command = matchVoiceCommand(result[j].transcript);
+        if(command){
+          handleVoiceCommand(command);
+          return;
+        }
+      }
+    }
+  };
+}
+
+async function getMicrophonePermissionState(){
+  if(!navigator.permissions || !navigator.permissions.query) return 'unknown';
+
+  try{
+    const permission = await navigator.permissions.query({ name:'microphone' });
+    return permission.state;
+  }catch(e){
+    return 'unknown';
+  }
+}
+
+async function requestMicrophoneAccess(){
+  const permissionState = await getMicrophonePermissionState();
+  if(permissionState === 'denied'){
+    voiceBlocked = true;
+    voiceEnabled = false;
+    storeVoicePreference(false);
+    showVoiceFeedback('MIC BLOCKED', '');
+    updateVoiceUI();
+    return false;
+  }
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    return true;
+  }
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    stream.getTracks().forEach(track => track.stop());
+    return true;
+  }catch(e){
+    voiceBlocked = true;
+    voiceEnabled = false;
+    storeVoicePreference(false);
+    showVoiceFeedback('MIC BLOCKED', '');
+    updateVoiceUI();
+    return false;
+  }
+}
+
+function updateVoiceUI(){
+  if(!voiceControl || !voiceToggle || !voiceLabel) return;
+
+  if(!voiceSupported){
+    voiceControl.hidden = true;
+    voiceControl.setAttribute('aria-hidden', 'true');
+    voiceControl.setAttribute('inert', '');
+    return;
+  }
+
+  voiceControl.hidden = false;
+  const listening = voiceListening && shouldVoiceListen();
+
+  voiceControl.classList.toggle('on', voiceEnabled);
+  voiceControl.classList.toggle('listening', listening);
+  voiceControl.classList.toggle('blocked', voiceBlocked);
+
+  if(voiceBlocked){
+    voiceLabel.textContent = 'MIC BLOCKED';
+    voiceToggle.setAttribute('aria-pressed', 'false');
+    voiceToggle.setAttribute('aria-disabled', 'true');
+    voiceToggle.setAttribute('aria-label', 'Microphone blocked. Click path still works.');
+    voiceToggle.title = 'Mic blocked in browser settings. Click path still works.';
+  }else if(listening){
+    voiceLabel.textContent = 'LISTENING';
+    voiceToggle.setAttribute('aria-pressed', 'true');
+    voiceToggle.removeAttribute('aria-disabled');
+    voiceToggle.setAttribute('aria-label', 'Turn voice control off');
+    voiceToggle.title = 'Voice control is listening';
+  }else if(voiceEnabled){
+    voiceLabel.textContent = 'VOICE ON';
+    voiceToggle.setAttribute('aria-pressed', 'true');
+    voiceToggle.removeAttribute('aria-disabled');
+    voiceToggle.setAttribute('aria-label', 'Turn voice control off');
+    voiceToggle.title = 'Voice control will listen on active Omnitrix screens';
+  }else{
+    voiceLabel.textContent = 'VOICE OFF';
+    voiceToggle.setAttribute('aria-pressed', 'false');
+    voiceToggle.removeAttribute('aria-disabled');
+    voiceToggle.setAttribute('aria-label', 'Turn voice control on');
+    voiceToggle.title = 'Turn voice control on';
+  }
+
+  if(activationHint && !body.classList.contains('activated')){
+    activationHint.textContent = voiceEnabled && isVoiceActiveScreen()
+      ? 'PRESS OR SAY HERO TIME'
+      : 'PRESS TO ACTIVATE';
+  }
+}
+
+function showVoiceFeedback(text, prefix = 'HEARD'){
+  if(!voiceFeedback || !voiceControl) return;
+
+  clearTimeout(voiceFeedbackTimer);
+  voiceFeedback.textContent = prefix ? `${prefix}: ${text}` : text;
+  voiceFeedback.classList.add('show');
+  voiceControl.classList.add('heard');
+
+  voiceFeedbackTimer = setTimeout(() => {
+    voiceFeedback.classList.remove('show');
+    voiceControl.classList.remove('heard');
+  }, 1500);
+}
+
+function scheduleVoiceLifecycle(delay = 250){
+  clearTimeout(voiceRestartTimer);
+  voiceRestartTimer = setTimeout(updateVoiceLifecycle, Math.max(0, delay));
+}
+
+function startVoiceListening(){
+  if(!voiceRecognition) setupVoiceRecognition();
+  if(!voiceRecognition || voiceListening || voiceStarting || voiceBlocked) return;
+
+  try{
+    voiceStopExpected = false;
+    voiceStarting = true;
+    voiceRecognition.start();
+  }catch(e){
+    voiceStarting = false;
+    scheduleVoiceLifecycle(800);
+  }
+
+  updateVoiceUI();
+}
+
+function stopVoiceListening(){
+  clearTimeout(voiceRestartTimer);
+  if(!voiceRecognition || (!voiceListening && !voiceStarting)){
+    voiceListening = false;
+    voiceStarting = false;
+    updateVoiceUI();
+    return;
+  }
+
+  voiceStopExpected = true;
+  try{ voiceRecognition.abort(); }catch(e){}
+  voiceListening = false;
+  voiceStarting = false;
+  updateVoiceUI();
+}
+
+function updateVoiceLifecycle(){
+  if(!voiceSupported){
+    updateVoiceUI();
+    return;
+  }
+
+  setupVoiceRecognition();
+
+  if(shouldVoiceListen()){
+    startVoiceListening();
+  }else{
+    stopVoiceListening();
+
+    if(voiceEnabled && !voiceBlocked && Date.now() < voiceCooldownUntil){
+      scheduleVoiceLifecycle(voiceCooldownUntil - Date.now());
+    }
+  }
+
+  updateVoiceUI();
+}
+
+function matchVoiceCommand(transcript){
+  const normalized = normalizeVoiceText(transcript);
+  if(!normalized) return null;
+
+  if(!body.classList.contains('activated') && !body.classList.contains('revealed')){
+    if(hasVoicePhrase(normalized, HERO_VOICE_PHRASES)){
+      return { type:'activate', label:'HERO TIME' };
+    }
+    return null;
+  }
+
+  if(body.classList.contains('viewing-aliens') && !body.classList.contains('transforming')){
+    for(const alien of ALIENS){
+      const aliases = ALIEN_VOICE_ALIASES[alien.id] || [alien.name];
+      if(hasVoicePhrase(normalized, aliases)){
+        return { type:'alien', label:alien.name, index:ALIENS.indexOf(alien) };
+      }
+    }
+
+    if(hasVoicePhrase(normalized, HERO_VOICE_PHRASES)){
+      return { type:'engage-current', label:'HERO TIME' };
+    }
+  }
+
+  return null;
+}
+
+function handleVoiceCommand(command){
+  voiceCooldownUntil = Date.now() + 3000;
+  showVoiceFeedback(command.label);
+  stopVoiceListening();
+
+  if(command.type === 'activate'){
+    activate();
+  }
+
+  if(command.type === 'alien'){
+    const changedAlien = command.index !== currentAlien;
+    selectAlien(command.index);
+    setTimeout(engageTransform, changedAlien ? 280 : 120);
+  }
+
+  if(command.type === 'engage-current'){
+    engageTransform();
+  }
+
+  scheduleVoiceLifecycle(3100);
+}
+
+async function enableVoiceFromUser(){
+  voiceBlocked = false;
+  voiceEnabled = true;
+  storeVoicePreference(true);
+  updateVoiceUI();
+
+  const allowed = await requestMicrophoneAccess();
+  if(!allowed) return;
+
+  updateVoiceLifecycle();
+}
+
+function disableVoice(){
+  voiceEnabled = false;
+  voiceCooldownUntil = 0;
+  storeVoicePreference(false);
+  stopVoiceListening();
+  updateVoiceUI();
+}
+
+async function handleVoiceToggle(){
+  if(!voiceSupported) return;
+
+  if(voiceBlocked){
+    showVoiceFeedback('MIC BLOCKED', '');
+    return;
+  }
+
+  if(voiceEnabled){
+    disableVoice();
+    return;
+  }
+
+  await enableVoiceFromUser();
+}
+
+async function restoreVoicePreference(){
+  if(!readStoredVoicePreference()) return;
+
+  const permissionState = await getMicrophonePermissionState();
+  if(permissionState === 'granted'){
+    voiceEnabled = true;
+    updateVoiceLifecycle();
+  }else if(permissionState === 'denied'){
+    voiceBlocked = true;
+    voiceEnabled = false;
+    storeVoicePreference(false);
+  }
+
+  updateVoiceUI();
+}
+
+function initVoiceControl(){
+  if(!voiceSupported){
+    updateVoiceUI();
+    return;
+  }
+
+  setupVoiceRecognition();
+  voiceToggle.addEventListener('click', handleVoiceToggle);
+  document.addEventListener('visibilitychange', updateVoiceLifecycle);
+  window.addEventListener('focus', updateVoiceLifecycle);
+  restoreVoicePreference();
+  updateVoiceUI();
+}
 
 let currentAlien = 0;
 let pointerAngle = 0;
@@ -1481,6 +1981,7 @@ function hideAliens(){
 }
 
 renderDial();
+initVoiceControl();
 syncA11yState();
 
 // Hook hero nav links that have live destinations.
