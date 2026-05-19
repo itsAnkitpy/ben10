@@ -1851,7 +1851,7 @@ function exitIntro(reason = 'skipped'){
     fadeOut(sndIntro, 500);
   }
 
-  body.classList.remove('intro-gate-visible','intro-playing');
+  body.classList.remove('intro-gate-visible');
   body.classList.add('intro-exiting');
   syncA11yState();
 
