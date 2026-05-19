@@ -175,7 +175,7 @@ body.intro-playing .crawl-content{animation:crawlScroll 31s cubic-bezier(.35,.05
   margin-bottom:14px;
 }
 .crawl-heading{
-  font-family:var(--crawl-font);
+  font-family:var(--display);
   font-size:clamp(42px, 9vw, 112px);
   line-height:.9;letter-spacing:.04em;
   color:var(--green);
@@ -1364,8 +1364,8 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 </section>
 
 <div class="control-cluster" id="controlCluster">
-  <button class="audio-toggle" id="audioToggle" aria-label="Toggle sound">
-    <span class="dot"></span>SOUND OFF
+  <button class="audio-toggle on" id="audioToggle" aria-label="Toggle sound">
+    <span class="dot"></span>SOUND ON
   </button>
   <div class="voice-control" id="voiceControl" hidden aria-hidden="true" inert>
     <button class="voice-toggle" id="voiceToggle" type="button" aria-label="Turn voice control on" aria-pressed="false">
@@ -1517,7 +1517,7 @@ function buildKirby(){
 buildKirby();
 
 // ───────── Audio: real mp3 playback ─────────
-let audioEnabled = false;
+let audioEnabled = true;
 let flashTimer = null;
 let cutActivationTimer = null;
 let cutAllTimer = null;
