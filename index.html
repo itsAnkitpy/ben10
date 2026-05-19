@@ -7,7 +7,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="audio/intro.mp3" as="audio">
 <style>
+@font-face{
+  font-family:'Star Jedi';
+  src:url('assets/fonts/Starjedi.ttf') format('truetype');
+  font-display:swap;
+}
+@font-face{
+  font-family:'Star Jedi Hollow';
+  src:url('assets/fonts/Starjhol.ttf') format('truetype');
+  font-display:swap;
+}
+
 :root{
   --void:#050605;
   --deep:#0a0d0a;
@@ -24,6 +36,7 @@
   --ink:#000;
   --hud:'Chakra Petch', system-ui, sans-serif;
   --display:'Bungee', system-ui, sans-serif;
+  --crawl-font:'Star Jedi', 'Star Jedi Hollow', var(--display);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -36,6 +49,166 @@ body{
   letter-spacing:.04em;
   user-select:none;
   -webkit-tap-highlight-color:transparent;
+}
+body.intro-boot .stage,
+body.intro-boot .control-cluster{opacity:0;pointer-events:none}
+
+/* ═════════ First-visit cinematic crawl ═════════ */
+.intro-gate,
+.intro-crawl{
+  position:fixed;inset:0;z-index:80;
+  display:grid;place-items:center;
+  pointer-events:none;opacity:0;visibility:hidden;
+  transition:opacity .55s ease, visibility .55s ease;
+}
+body.intro-gate-visible .intro-gate,
+body.intro-playing .intro-crawl,
+body.intro-exiting .intro-crawl{
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+body.intro-exiting .intro-crawl{opacity:0}
+body.intro-gate-visible .stage,
+body.intro-playing .stage,
+body.intro-exiting .stage,
+body.intro-gate-visible .control-cluster,
+body.intro-playing .control-cluster,
+body.intro-exiting .control-cluster,
+body.intro-gate-visible .hud-corner,
+body.intro-playing .hud-corner,
+body.intro-exiting .hud-corner,
+body.intro-gate-visible .replay,
+body.intro-playing .replay,
+body.intro-exiting .replay,
+body.intro-gate-visible .crawl-replay,
+body.intro-playing .crawl-replay,
+body.intro-exiting .crawl-replay{
+  opacity:0 !important;pointer-events:none !important;
+}
+.intro-gate::before,
+.intro-crawl::before{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 58%, rgba(13,26,13,.58) 0%, rgba(5,6,5,.88) 56%, rgba(0,0,0,.96) 100%);
+}
+.intro-gate::after,
+.intro-crawl::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.6), transparent 20%, transparent 72%, rgba(0,0,0,.78));
+}
+.intro-gate-panel{
+  position:relative;z-index:2;
+  display:grid;place-items:center;gap:18px;
+  width:min(620px, calc(100vw - 36px));
+  padding:34px 28px;
+  text-align:center;
+  border:1px solid rgba(79,219,31,.34);
+  background:rgba(5,6,5,.55);
+  box-shadow:inset 0 0 32px rgba(79,219,31,.08), 0 0 60px rgba(0,0,0,.72);
+  clip-path:polygon(18px 0,100% 0,calc(100% - 18px) 100%,0 100%);
+  backdrop-filter:blur(8px);
+}
+.intro-kicker{
+  font-size:11px;font-weight:700;letter-spacing:.42em;
+  color:var(--green);text-transform:uppercase;
+}
+.intro-title{
+  font-family:var(--crawl-font);
+  font-size:clamp(34px, 6.5vw, 72px);
+  line-height:.92;letter-spacing:.04em;
+  color:var(--green-hot);
+  text-shadow:0 0 16px var(--green), 0 0 40px var(--green-deep), 3px 3px 0 #000;
+}
+.intro-begin,
+.intro-skip,
+.crawl-replay button{
+  background:rgba(10,13,10,.72);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:700;font-size:11px;letter-spacing:.34em;
+  padding:12px 20px;cursor:pointer;
+  text-transform:uppercase;
+  clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);
+  backdrop-filter:blur(8px);
+  transition:color .2s, border-color .2s, box-shadow .2s, background .2s, opacity .25s;
+}
+.intro-begin:hover,
+.intro-skip:hover,
+.crawl-replay button:hover{
+  color:var(--green);border-color:var(--green);
+  box-shadow:0 0 16px var(--green-mist), inset 0 0 14px var(--green-mist);
+}
+.intro-subtitle{
+  font-size:10px;font-weight:600;letter-spacing:.36em;
+  color:rgba(232,255,216,.58);text-transform:uppercase;
+}
+.intro-crawl{
+  overflow:hidden;
+  background:rgba(0,0,0,.24);
+}
+.crawl-perspective{
+  position:relative;z-index:2;
+  width:min(860px, 92vw);
+  height:100vh;
+  perspective:420px;
+  perspective-origin:50% 42%;
+  display:flex;justify-content:center;
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 12%, #000 76%, transparent 100%);
+  mask-image:linear-gradient(180deg, transparent 0%, #000 12%, #000 76%, transparent 100%);
+}
+.crawl-content{
+  position:absolute;bottom:-120vh;
+  width:min(760px, 86vw);
+  min-height:160vh;
+  color:var(--green);
+  text-align:center;
+  transform-origin:50% 100%;
+  transform:rotateX(24deg) translateY(0);
+  text-shadow:0 0 12px var(--green-mist), 0 0 32px rgba(79,219,31,.22);
+  will-change:transform;
+}
+body.intro-playing .crawl-content{animation:crawlScroll 31s cubic-bezier(.35,.05,.4,.95) forwards}
+.crawl-episode{
+  font-family:var(--crawl-font);
+  font-size:clamp(24px, 5vw, 54px);
+  line-height:1.05;letter-spacing:.05em;
+  color:var(--green-hot);
+  margin-bottom:14px;
+}
+.crawl-heading{
+  font-family:var(--crawl-font);
+  font-size:clamp(42px, 9vw, 112px);
+  line-height:.9;letter-spacing:.04em;
+  color:var(--green);
+  margin-bottom:42px;
+}
+.crawl-content p{
+  font-family:var(--hud);
+  font-size:clamp(20px, 3.2vw, 34px);
+  line-height:1.48;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin:0 auto 28px;
+  max-width:720px;
+}
+.intro-skip{
+  position:fixed;right:24px;bottom:24px;z-index:83;
+  opacity:0;pointer-events:none;
+}
+body.intro-skip-ready .intro-skip{opacity:1;pointer-events:auto}
+.crawl-replay{
+  position:fixed;right:24px;bottom:74px;z-index:11;
+  opacity:0;pointer-events:none;
+  transition:opacity .45s;
+}
+body:not(.intro-boot):not(.intro-gate-visible):not(.intro-playing):not(.intro-exiting):not(.transforming) .crawl-replay{
+  opacity:1;pointer-events:auto;transition-delay:.9s;
+}
+.crawl-replay button{padding:10px 15px;font-size:10px;letter-spacing:.3em}
+@keyframes crawlScroll{
+  0%  {transform:rotateX(24deg) translateY(0)}
+  55% {transform:rotateX(24deg) translateY(-130vh)}
+  100%{transform:rotateX(24deg) translateY(-130vh)}
 }
 
 /* ───────── Cosmic backdrop: tech grid + starfield ───────── */
@@ -571,6 +744,13 @@ body.revealed .nav .nav-item:nth-child(2){animation-delay:1.12s}
   outline-offset:4px;
   box-shadow:0 0 0 4px rgba(79,219,31,.18), 0 0 18px var(--green-mist);
 }
+.intro-begin:focus-visible,
+.intro-skip:focus-visible,
+.crawl-replay button:focus-visible{
+  outline:2px solid var(--green-hot);
+  outline-offset:4px;
+  box-shadow:0 0 0 4px rgba(79,219,31,.18), 0 0 18px var(--green-mist);
+}
 
 /* corner HUD chrome */
 .hud-corner{
@@ -1022,6 +1202,15 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .audio-toggle,.voice-toggle{font-size:9px;letter-spacing:.2em;padding:9px 10px}
   .voice-toggle{min-width:106px}
   .voice-feedback{min-width:166px;font-size:9px;letter-spacing:.2em}
+  .intro-gate-panel{padding:28px 18px}
+  .intro-kicker,.intro-subtitle{font-size:9px;letter-spacing:.26em}
+  .intro-begin,.intro-skip{font-size:10px;letter-spacing:.24em}
+  .intro-skip{right:14px;bottom:14px}
+  .crawl-replay{right:14px;bottom:58px}
+  .crawl-content{width:92vw;bottom:-126vh}
+  .crawl-episode{font-size:clamp(18px, 5vw, 28px);margin-bottom:8px}
+  .crawl-heading{font-size:clamp(28px, 9vw, 56px);margin-bottom:22px}
+  .crawl-content p{font-size:clamp(14px, 4.2vw, 19px);line-height:1.42;letter-spacing:.05em;margin:0 auto 14px;max-width:88vw}
   .tri.up{border-left-width:42px;border-right-width:42px;border-top-width:56px;transform:translate(-50%,-56px)}
   .tri.dn{border-left-width:42px;border-right-width:42px;border-bottom-width:56px;transform:translate(-50%,0)}
   body.activated .tri.up{transform:translate(-50%,-56px) rotate(180deg)}
@@ -1042,15 +1231,48 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  .intro-gate,.intro-crawl{display:none !important}
 }
 </style>
 </head>
-<body>
+<body class="intro-boot">
 
 <div class="backdrop"></div>
 <div class="grid"></div>
 <div class="stars" id="stars"></div>
 <div class="kirby" id="kirby"></div>
+
+<!-- First-visit cinematic intro -->
+<section class="intro-gate" id="introGate" aria-hidden="true" inert>
+  <div class="intro-gate-panel">
+    <div class="intro-kicker">INCOMING TRANSMISSION · OMNITRIX ARCHIVE</div>
+    <h1 class="intro-title">BEN 10</h1>
+    <button class="intro-begin" id="introBegin" type="button">BEGIN TRANSMISSION</button>
+    <div class="intro-subtitle">PRESS TO RECEIVE · ESC TO BYPASS</div>
+  </div>
+</section>
+
+<section class="intro-crawl" id="introCrawl" aria-hidden="true" inert>
+  <div class="crawl-perspective">
+    <article class="crawl-content" id="crawlContent">
+      <div class="crawl-episode">EPISODE X</div>
+      <h2 class="crawl-heading">HERO TIME</h2>
+
+      <p>A long time ago, in a wristwatch far, far away...</p>
+
+      <p>Ten alien forms. One reluctant ten-year-old hero. And the weight of the galaxy on a chunky green dial.</p>
+
+      <p>This tribute is built by Ankit Sharma — software engineer from Shimla, Ben 10 fan since Saturday mornings meant Cartoon Network, and a believer in fan-craft as its own art form.</p>
+
+      <p>Every silhouette, every sound, every line of code here is a love letter to a show that taught a generation that being the smallest in the room was no reason to back down.</p>
+
+      <p>The Omnitrix is charged. The watch awaits.</p>
+
+      <p>It's hero time.</p>
+    </article>
+  </div>
+  <button class="intro-skip" id="introSkip" type="button">SKIP ▸</button>
+</section>
 
 <div class="control-cluster" id="controlCluster">
   <button class="audio-toggle" id="audioToggle" aria-label="Toggle sound">
@@ -1126,7 +1348,7 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 </div>
 
 <div class="replay" id="replay" aria-hidden="true" inert>
-  <button id="replayBtn">REPLAY INTRO</button>
+  <button id="replayBtn">REPLAY WATCH</button>
 </div>
 
 <!-- Aliens Gallery — Omnitrix Dial view -->
@@ -1163,6 +1385,9 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 <div class="hud-corner tl">OMNITRIX <span>v.10.0 / GALVAN TECH</span></div>
 <div class="hud-corner bl">STATUS <span>ACTIVE / LOCKED-ON</span></div>
 <div class="hud-corner br"><span>EARTH / TENNYSON, B.</span> SECTOR 010</div>
+<div class="crawl-replay" id="crawlReplay" aria-hidden="true" inert>
+  <button id="crawlReplayBtn" type="button">▸ REPLAY INTRO</button>
+</div>
 
 <div class="scanlines"></div>
 <div class="vignette"></div>
@@ -1211,13 +1436,15 @@ let cutAllTimer = null;
 const sndActivation = new Audio('audio/omnitrix-activation.mp3');
 const sndFlash = new Audio('audio/omnitrix-flash.mp3');
 const sndDial = new Audio('audio/dial_turning.mp3');
-[sndActivation, sndFlash, sndDial].forEach(a => {
+const sndIntro = new Audio('audio/intro.mp3');
+[sndActivation, sndFlash, sndDial, sndIntro].forEach(a => {
   a.preload = 'auto';
   a.loop = false;
 });
 sndActivation.volume = 0.9;
 sndFlash.volume = 0.85;
 sndDial.volume = 0.7;
+sndIntro.volume = 0.95;
 
 // Smooth fade-out helper so cuts don't sound like guillotine drops
 function fadeOut(audio, ms = 350){
@@ -1274,6 +1501,13 @@ function stopAllAudio(){
 
 // ───────── Activation flow ─────────
 const body = document.body;
+const introGate = document.getElementById('introGate');
+const introBegin = document.getElementById('introBegin');
+const introCrawl = document.getElementById('introCrawl');
+const crawlContent = document.getElementById('crawlContent');
+const introSkip = document.getElementById('introSkip');
+const crawlReplay = document.getElementById('crawlReplay');
+const crawlReplayBtn = document.getElementById('crawlReplayBtn');
 const watch = document.getElementById('watch');
 const stage = document.getElementById('stage');
 const hero = document.getElementById('hero');
@@ -1293,8 +1527,16 @@ const transformDismiss = document.getElementById('transformDismiss');
 const activationHint = document.querySelector('.hint');
 const focusableSelector = 'a[href], button, input, select, textarea, [role="button"], [tabindex]';
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+const introStorageKey = 'ben10.introSeen';
 const voiceStorageKey = 'ben10.voiceEnabled';
+const introMinimumMs = 31000;
 
+let introSkipTimer = null;
+let introExitTimer = null;
+let introCompletionTimer = null;
+let introStartedAt = 0;
+let introSkipReady = false;
+let introExiting = false;
 let voiceSupported = Boolean(SpeechRecognitionCtor);
 let voiceEnabled = false;
 let voiceListening = false;
@@ -1341,27 +1583,41 @@ function setWatchEnabled(isEnabled){
   watch.tabIndex = isEnabled ? 0 : -1;
 }
 
-function focusVisibleElement(el){
+function focusVisibleElement(el, retryDelay = 0){
   if(!el) return;
+  const applyFocus = () => {
+    if(document.body.contains(el) && !el.closest('[inert]')) el.focus({ preventScroll:true });
+  };
   requestAnimationFrame(() => {
-    if(!el.closest('[inert]')) el.focus({ preventScroll:true });
+    requestAnimationFrame(() => {
+      applyFocus();
+      if(retryDelay) setTimeout(applyFocus, retryDelay);
+    });
   });
 }
 
 function syncA11yState(){
+  const isIntroGateVisible = body.classList.contains('intro-gate-visible');
+  const isIntroCrawlVisible = body.classList.contains('intro-playing') || body.classList.contains('intro-exiting');
+  const isIntroVisible = isIntroGateVisible || isIntroCrawlVisible;
   const isRevealed = body.classList.contains('revealed');
   const isViewingAliens = body.classList.contains('viewing-aliens');
   const isTransforming = body.classList.contains('transforming');
-  const isIntroVisible = !isRevealed;
-  const isHeroVisible = isRevealed && !isViewingAliens && !isTransforming;
-  const isAliensVisible = isViewingAliens && !isTransforming;
+  const isWatchVisible = !isRevealed && !isIntroVisible;
+  const isHeroVisible = isRevealed && !isViewingAliens && !isTransforming && !isIntroVisible;
+  const isAliensVisible = isViewingAliens && !isTransforming && !isIntroVisible;
+  const isCrawlReplayVisible = !isTransforming && !isIntroVisible && !body.classList.contains('intro-boot');
 
-  setElementActive(stage, isIntroVisible);
-  setWatchEnabled(isIntroVisible && !body.classList.contains('activated'));
-  setElementActive(audioToggle, !isTransforming);
-  setElementActive(voiceControl, voiceSupported && !isTransforming);
+  setElementActive(introGate, isIntroGateVisible);
+  setElementActive(introCrawl, isIntroCrawlVisible);
+  if(isIntroCrawlVisible && !introSkipReady) introSkip.tabIndex = -1;
+  setElementActive(stage, isWatchVisible);
+  setWatchEnabled(isWatchVisible && !body.classList.contains('activated'));
+  setElementActive(audioToggle, !isTransforming && !isIntroVisible);
+  setElementActive(voiceControl, voiceSupported && !isTransforming && !isIntroVisible);
   setElementActive(hero, isHeroVisible);
   setElementActive(replay, isHeroVisible);
+  setElementActive(crawlReplay, isCrawlReplayVisible);
   setElementActive(aliensPage, isAliensVisible);
   setElementActive(dialControls, isAliensVisible);
   setElementActive(backBtn, isAliensVisible);
@@ -1394,6 +1650,167 @@ function reset(){
   // Rebuild kirby dots so they re-animate next time
   setTimeout(buildKirby, 50);
 }
+
+function hasSeenIntro(){
+  try{ return localStorage.getItem(introStorageKey) === 'true'; }catch(e){ return false; }
+}
+
+function storeIntroSeen(){
+  try{ localStorage.setItem(introStorageKey, 'true'); }catch(e){}
+}
+
+function shouldBypassIntro(){
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return reducedMotion || hasSeenIntro() || window.location.hash === '#aliens';
+}
+
+function clearIntroTimers(){
+  clearTimeout(introSkipTimer);
+  clearTimeout(introExitTimer);
+  clearTimeout(introCompletionTimer);
+}
+
+function stopIntroAudio(){
+  clearIntroTimers();
+  fadeOut(sndIntro, 450);
+}
+
+function resetToIdleWatch(){
+  stopAllAudio();
+  stopIntroAudio();
+  stopVoice();
+  stopVoiceListening();
+  body.classList.remove('activated','flashing','revealed','viewing-aliens','engaging','transforming');
+  document.getElementById('transformAlien').src = '';
+  document.getElementById('transformName').textContent = '';
+  setTimeout(buildKirby, 50);
+}
+
+function setIntroSkipReady(isReady){
+  introSkipReady = isReady;
+  body.classList.toggle('intro-skip-ready', isReady);
+  introSkip.tabIndex = isReady ? 0 : -1;
+}
+
+function restartCrawlAnimation(){
+  crawlContent.style.animation = 'none';
+  void crawlContent.offsetWidth;
+  crawlContent.style.animation = '';
+}
+
+function completeIntroBoot(){
+  body.classList.remove('intro-boot','intro-gate-visible','intro-playing','intro-exiting','intro-skip-ready');
+  setIntroSkipReady(false);
+  introExiting = false;
+  syncA11yState();
+}
+
+function showIntroGate({ replay = false } = {}){
+  clearIntroTimers();
+  introExiting = false;
+  setIntroSkipReady(false);
+  restartCrawlAnimation();
+
+  if(replay) resetToIdleWatch();
+
+  body.classList.remove('intro-boot','intro-playing','intro-exiting');
+  body.classList.add('intro-gate-visible');
+  syncA11yState();
+  focusVisibleElement(introBegin, 140);
+}
+
+function beginIntro(){
+  if(introExiting) return;
+
+  clearIntroTimers();
+  setIntroSkipReady(false);
+  restartCrawlAnimation();
+
+  body.classList.remove('intro-gate-visible','intro-exiting');
+  body.classList.add('intro-playing');
+  introStartedAt = Date.now();
+  syncA11yState();
+
+  try{
+    sndIntro.currentTime = 0;
+    sndIntro.play().catch(()=>{});
+  }catch(e){}
+
+  introSkipTimer = setTimeout(() => {
+    setIntroSkipReady(true);
+    syncA11yState();
+  }, 5000);
+}
+
+function completeIntroAfterMinimum(){
+  if(!body.classList.contains('intro-playing')) return;
+
+  const elapsed = Date.now() - introStartedAt;
+  const remaining = Math.max(0, introMinimumMs - elapsed);
+  clearTimeout(introCompletionTimer);
+  introCompletionTimer = setTimeout(() => exitIntro('completed'), remaining);
+}
+
+function exitIntro(reason = 'skipped'){
+  if(introExiting) return;
+
+  introExiting = true;
+  storeIntroSeen();
+  clearIntroTimers();
+  setIntroSkipReady(false);
+  stopVoiceListening();
+
+  if(reason === 'completed'){
+    fadeOut(sndIntro, 300);
+  }else{
+    fadeOut(sndIntro, 500);
+  }
+
+  body.classList.remove('intro-gate-visible','intro-playing');
+  body.classList.add('intro-exiting');
+  syncA11yState();
+
+  introExitTimer = setTimeout(() => {
+    completeIntroBoot();
+    focusVisibleElement(watch);
+  }, 650);
+}
+
+function handleIntroKeydown(e){
+  if(body.classList.contains('intro-gate-visible') && e.key === 'Escape'){
+    e.preventDefault();
+    exitIntro('skipped');
+    return;
+  }
+
+  if(body.classList.contains('intro-playing') && introSkipReady && (e.key === 'Escape' || e.key === ' ')){
+    e.preventDefault();
+    exitIntro('skipped');
+  }
+}
+
+function initIntro(){
+  if(shouldBypassIntro()){
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      storeIntroSeen();
+    }
+    completeIntroBoot();
+    return;
+  }
+
+  showIntroGate();
+}
+
+introBegin.addEventListener('click', beginIntro);
+introSkip.addEventListener('click', () => {
+  if(introSkipReady) exitIntro('skipped');
+});
+crawlContent.addEventListener('animationend', e => {
+  if(e.target === crawlContent) completeIntroAfterMinimum();
+});
+sndIntro.addEventListener('ended', completeIntroAfterMinimum);
+crawlReplayBtn.addEventListener('click', () => showIntroGate({ replay:true }));
+window.addEventListener('keydown', handleIntroKeydown);
 
 watch.addEventListener('click', activate);
 watch.addEventListener('keydown', e => {
@@ -1469,6 +1886,11 @@ function hasVoicePhrase(normalized, aliases){
 }
 
 function isVoiceActiveScreen(){
+  const introVisible = body.classList.contains('intro-gate-visible')
+    || body.classList.contains('intro-playing')
+    || body.classList.contains('intro-exiting');
+  if(introVisible) return false;
+
   const idleOmnitrix = !body.classList.contains('activated') && !body.classList.contains('revealed');
   const aliensDial = body.classList.contains('viewing-aliens') && !body.classList.contains('transforming');
   return idleOmnitrix || aliensDial;
@@ -1982,6 +2404,7 @@ function hideAliens(){
 
 renderDial();
 initVoiceControl();
+initIntro();
 syncA11yState();
 
 // Hook hero nav links that have live destinations.
