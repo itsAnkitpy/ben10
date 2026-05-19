@@ -457,7 +457,8 @@ body.revealed .tagline{animation:fadeUp .7s ease-out forwards;animation-delay:.8
   display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
   margin-top:8px;
 }
-.nav a{
+.nav a,
+.nav .nav-item{
   position:relative;
   font-family:var(--hud);font-weight:600;font-size:13px;letter-spacing:.42em;
   color:var(--bone);text-decoration:none;
@@ -474,11 +475,31 @@ body.revealed .tagline{animation:fadeUp .7s ease-out forwards;animation-delay:.8
   border-color:var(--green);color:var(--green);
   box-shadow:0 0 14px var(--green-mist), inset 0 0 14px var(--green-mist);
 }
-body.revealed .nav a{animation:fadeUp .6s ease-out forwards}
-body.revealed .nav a:nth-child(1){animation-delay:1.0s}
-body.revealed .nav a:nth-child(2){animation-delay:1.12s}
-body.revealed .nav a:nth-child(3){animation-delay:1.24s}
-body.revealed .nav a:nth-child(4){animation-delay:1.36s}
+.nav .nav-item[aria-disabled="true"]{
+  cursor:default;
+  color:rgba(232,255,216,.42);
+  border-color:rgba(90,96,90,.45);
+}
+body.revealed .nav a,
+body.revealed .nav .nav-item{animation:fadeUp .6s ease-out forwards}
+body.revealed .nav a:nth-child(1),
+body.revealed .nav .nav-item:nth-child(1){animation-delay:1.0s}
+body.revealed .nav a:nth-child(2),
+body.revealed .nav .nav-item:nth-child(2){animation-delay:1.12s}
+
+.watch:focus-visible,
+.audio-toggle:focus-visible,
+.nav a:focus-visible,
+.replay button:focus-visible,
+.back-btn:focus-visible,
+.slot:focus-visible,
+.engage-btn:focus-visible,
+.dial-controls button:focus-visible,
+.transform-dismiss:focus-visible{
+  outline:2px solid var(--green-hot);
+  outline-offset:4px;
+  box-shadow:0 0 0 4px rgba(79,219,31,.18), 0 0 18px var(--green-mist);
+}
 
 /* corner HUD chrome */
 .hud-corner{
@@ -1009,28 +1030,26 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 <div class="flash"></div>
 
 <!-- Hero landing (post-flash) -->
-<div class="hero" aria-hidden="true">
+<div class="hero" id="hero" aria-hidden="true" inert>
   <div class="hero-inner">
     <h1 class="brand">BEN<span class="num">10</span></h1>
     <div class="tagline">IT'S HERO TIME</div>
     <nav class="nav">
       <a href="#aliens">Aliens</a>
-      <a href="#episodes">Episodes</a>
-      <a href="#omnitrix">Omnitrix</a>
-      <a href="#about">About</a>
+      <span class="nav-item" aria-disabled="true">Omnitrix</span>
     </nav>
   </div>
 </div>
 
-<div class="replay" id="replay">
+<div class="replay" id="replay" aria-hidden="true" inert>
   <button id="replayBtn">REPLAY INTRO</button>
 </div>
 
 <!-- Aliens Gallery — Omnitrix Dial view -->
-<button class="back-btn" id="backBtn" aria-label="Back to hero">BACK</button>
-<div class="aliens-header" id="aliensHeader">BEN 10 ARSENAL <b>· 10 / 10 ·</b> ALIEN ARCHIVE</div>
+<button class="back-btn" id="backBtn" aria-label="Back to hero" aria-hidden="true" inert>BACK</button>
+<div class="aliens-header" id="aliensHeader" aria-hidden="true">BEN 10 ARSENAL <b>· 10 / 10 ·</b> ALIEN ARCHIVE</div>
 
-<section class="aliens-page" id="aliensPage" aria-hidden="true">
+<section class="aliens-page" id="aliensPage" aria-hidden="true" inert>
   <div class="dial" id="dial">
     <div class="dial-pointer-arm" id="dialPointer"><div class="dial-pointer"></div></div>
     <!-- slots injected here by JS -->
@@ -1041,14 +1060,14 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
   </div>
 </section>
 
-<div class="dial-controls" id="dialControls">
+<div class="dial-controls" id="dialControls" aria-hidden="true" inert>
   <button id="prevAlien" aria-label="Previous alien">◀ ROTATE</button>
   <span class="index" id="alienIndex">01 / 10</span>
   <button id="nextAlien" aria-label="Next alien">ROTATE ▶</button>
 </div>
 
 <!-- Transform cinematic overlay -->
-<div class="transform-stage" id="transformStage" aria-hidden="true">
+<div class="transform-stage" id="transformStage" aria-hidden="true" inert>
   <div class="transform-ring"></div>
   <div class="transform-ring two"></div>
   <div class="transform-flash"></div>
@@ -1172,12 +1191,86 @@ function stopAllAudio(){
 // ───────── Activation flow ─────────
 const body = document.body;
 const watch = document.getElementById('watch');
+const stage = document.getElementById('stage');
+const hero = document.getElementById('hero');
+const replay = document.getElementById('replay');
 const replayBtn = document.getElementById('replayBtn');
+const audioToggle = document.getElementById('audioToggle');
+const backBtn = document.getElementById('backBtn');
+const aliensHeader = document.getElementById('aliensHeader');
+const aliensPage = document.getElementById('aliensPage');
+const dialControls = document.getElementById('dialControls');
+const transformStage = document.getElementById('transformStage');
+const transformDismiss = document.getElementById('transformDismiss');
+const focusableSelector = 'a[href], button, input, select, textarea, [role="button"], [tabindex]';
+
+function setElementActive(el, isActive){
+  if(!el) return;
+  el.setAttribute('aria-hidden', String(!isActive));
+  el.toggleAttribute('inert', !isActive);
+
+  const targets = [
+    ...(el.matches(focusableSelector) ? [el] : []),
+    ...el.querySelectorAll(focusableSelector)
+  ];
+
+  targets.forEach(target => {
+    if(isActive){
+      if(target.dataset.prevTabindex !== undefined){
+        if(target.dataset.prevTabindex === ''){
+          target.removeAttribute('tabindex');
+        }else{
+          target.setAttribute('tabindex', target.dataset.prevTabindex);
+        }
+        delete target.dataset.prevTabindex;
+      }
+      return;
+    }
+
+    if(target.dataset.prevTabindex === undefined){
+      target.dataset.prevTabindex = target.hasAttribute('tabindex') ? target.getAttribute('tabindex') : '';
+    }
+    target.setAttribute('tabindex', '-1');
+  });
+}
+
+function setWatchEnabled(isEnabled){
+  watch.setAttribute('aria-disabled', String(!isEnabled));
+  watch.tabIndex = isEnabled ? 0 : -1;
+}
+
+function focusVisibleElement(el){
+  if(!el) return;
+  requestAnimationFrame(() => {
+    if(!el.closest('[inert]')) el.focus({ preventScroll:true });
+  });
+}
+
+function syncA11yState(){
+  const isRevealed = body.classList.contains('revealed');
+  const isViewingAliens = body.classList.contains('viewing-aliens');
+  const isTransforming = body.classList.contains('transforming');
+  const isIntroVisible = !isRevealed;
+  const isHeroVisible = isRevealed && !isViewingAliens && !isTransforming;
+  const isAliensVisible = isViewingAliens && !isTransforming;
+
+  setElementActive(stage, isIntroVisible);
+  setWatchEnabled(isIntroVisible && !body.classList.contains('activated'));
+  setElementActive(audioToggle, !isTransforming);
+  setElementActive(hero, isHeroVisible);
+  setElementActive(replay, isHeroVisible);
+  setElementActive(aliensPage, isAliensVisible);
+  setElementActive(dialControls, isAliensVisible);
+  setElementActive(backBtn, isAliensVisible);
+  setElementActive(aliensHeader, isAliensVisible);
+  setElementActive(transformStage, isTransforming);
+}
 
 function activate(){
   if(body.classList.contains('activated')) return;
 
   body.classList.add('activated');
+  syncA11yState();
   playOmnitrixSequence();
 
   // Flash phase — show the kirby dots
@@ -1186,12 +1279,14 @@ function activate(){
   // Reveal hero — after flash completes
   setTimeout(() => {
     body.classList.add('revealed');
+    syncA11yState();
   }, 5400);
 }
 
 function reset(){
   stopAllAudio();
   body.classList.remove('activated','flashing','revealed');
+  syncA11yState();
   // Rebuild kirby dots so they re-animate next time
   setTimeout(buildKirby, 50);
 }
@@ -1206,7 +1301,6 @@ replayBtn.addEventListener('click', () => {
 });
 
 // ───────── Audio toggle ─────────
-const audioToggle = document.getElementById('audioToggle');
 audioToggle.addEventListener('click', () => {
   audioEnabled = !audioEnabled;
   audioToggle.classList.toggle('on', audioEnabled);
@@ -1319,6 +1413,7 @@ function stopVoice(){
 function engageTransform(){
   clearTimeout(engageTimer);
   document.body.classList.remove('engaging', 'transforming');
+  syncA11yState();
   void document.body.offsetWidth;
   document.body.classList.add('engaging');
   engageTimer = setTimeout(() => document.body.classList.remove('engaging'), 1300);
@@ -1329,7 +1424,11 @@ function engageTransform(){
   alienImg.alt = a.name;
   document.getElementById('transformName').textContent = a.name;
 
-  requestAnimationFrame(() => document.body.classList.add('transforming'));
+  requestAnimationFrame(() => {
+    document.body.classList.add('transforming');
+    syncA11yState();
+    focusVisibleElement(transformDismiss);
+  });
 
   if(audioEnabled){
     try{ sndFlash.currentTime = 0; sndFlash.play().catch(()=>{}); }catch(e){}
@@ -1352,8 +1451,10 @@ function engageTransform(){
 function dismissTransform(){
   if(!document.body.classList.contains('transforming')) return;
   document.body.classList.remove('transforming');
+  syncA11yState();
   stopVoice();
   fadeOut(sndFlash, 250);
+  focusVisibleElement(document.getElementById('engageBtn'));
 }
 
 document.getElementById('transformDismiss').addEventListener('click', dismissTransform);
@@ -1366,18 +1467,23 @@ function showAliens(){
   if(document.body.classList.contains('viewing-aliens')) return;
   document.body.classList.add('viewing-aliens');
   selectAlien(currentAlien);
+  syncA11yState();
+  focusVisibleElement(document.querySelector('.slot.active'));
 }
 
 function hideAliens(){
   document.body.classList.remove('viewing-aliens', 'engaging', 'transforming');
+  syncA11yState();
   stopVoice();
   fadeOut(sndDial, 200);
   fadeOut(sndFlash, 250);
+  focusVisibleElement(document.querySelector('.nav a[href="#aliens"]'));
 }
 
 renderDial();
+syncA11yState();
 
-// Hook hero nav links — only Aliens is wired for now
+// Hook hero nav links that have live destinations.
 document.querySelectorAll('.nav a').forEach(link => {
   const href = link.getAttribute('href');
   if(href === '#aliens'){
@@ -1416,6 +1522,7 @@ window.addEventListener('keydown', e => {
 if(window.location.hash === '#aliens'){
   document.body.classList.add('boot', 'revealed', 'viewing-aliens');
   selectAlien(0);
+  syncA11yState();
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.body.classList.remove('boot');
   }));
