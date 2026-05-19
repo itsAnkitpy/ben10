@@ -211,6 +211,60 @@ body:not(.intro-boot):not(.intro-gate-visible):not(.intro-playing):not(.intro-ex
   100%{transform:rotateX(24deg) translateY(-130vh)}
 }
 
+/* ═════════ Galvan Warp Tunnel (behind the crawl) ═════════ */
+.warp-tunnel{
+  position:absolute;inset:0;z-index:1;
+  perspective:800px;perspective-origin:50% 50%;
+  pointer-events:none;
+  opacity:0;visibility:hidden;
+  transition:opacity .55s ease, visibility .55s ease;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 50%, transparent 0%, transparent 22%, #000 60%, #000 100%);
+  mask-image:radial-gradient(ellipse at 50% 50%, transparent 0%, transparent 22%, #000 60%, #000 100%);
+}
+body.intro-playing .warp-tunnel,
+body.intro-exiting .warp-tunnel{
+  opacity:1;visibility:visible;
+}
+body.intro-exiting .warp-tunnel{opacity:0}
+.warp-tunnel-inner{
+  position:absolute;inset:0;
+  transform-style:preserve-3d;
+  will-change:transform;
+}
+.warp-glyph{
+  --w:clamp(180px, 24vw, 360px);
+  position:absolute;left:50%;top:50%;
+  display:block;
+  width:var(--w);
+  aspect-ratio:1/1.4;
+  margin:calc(var(--w) * -0.7) 0 0 calc(var(--w) * -0.5);
+  background:var(--green);
+  clip-path:polygon(0% 0%, 100% 0%, 54% 50%, 100% 100%, 0% 100%, 46% 50%);
+  filter:drop-shadow(0 0 14px var(--green-mist)) drop-shadow(0 0 30px rgba(79,219,31,.18));
+  opacity:.45;
+}
+.warp-glyph::before{
+  content:"";
+  position:absolute;inset:6px;
+  background:var(--void);
+  clip-path:polygon(0% 0%, 100% 0%, 54% 50%, 100% 100%, 0% 100%, 46% 50%);
+}
+/* Clock-face arrangement: 12 / 1:30 / 3 / 4:30 / 6 / 7:30 / 9 / 10:30 */
+.warp-glyph:nth-child(1){transform:translate(0, -44vh)        translateZ(0)      rotateZ(0deg);   opacity:.55}
+.warp-glyph:nth-child(2){transform:translate(30vw, -30vh)     translateZ(-150px) rotateZ(45deg);  opacity:.30}
+.warp-glyph:nth-child(3){transform:translate(44vw, 0)         translateZ(-50px)  rotateZ(90deg);  opacity:.48}
+.warp-glyph:nth-child(4){transform:translate(30vw, 30vh)      translateZ(-200px) rotateZ(135deg); opacity:.22}
+.warp-glyph:nth-child(5){transform:translate(0, 44vh)         translateZ(-100px) rotateZ(180deg); opacity:.40}
+.warp-glyph:nth-child(6){transform:translate(-30vw, 30vh)     translateZ(-150px) rotateZ(225deg); opacity:.30}
+.warp-glyph:nth-child(7){transform:translate(-44vw, 0)        translateZ(-50px)  rotateZ(270deg); opacity:.48}
+.warp-glyph:nth-child(8){transform:translate(-30vw, -30vh)    translateZ(-200px) rotateZ(315deg); opacity:.22}
+body.intro-playing .warp-tunnel-inner{animation:warpDrift 20s linear infinite}
+body.intro-exiting .warp-tunnel-inner{animation-play-state:paused}
+@keyframes warpDrift{
+  0%  {transform:translateZ(0)}
+  100%{transform:translateZ(300px)}
+}
+
 /* ───────── Cosmic backdrop: tech grid + starfield ───────── */
 .backdrop{
   position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -1211,6 +1265,15 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .crawl-episode{font-size:clamp(18px, 5vw, 28px);margin-bottom:8px}
   .crawl-heading{font-size:clamp(28px, 9vw, 56px);margin-bottom:22px}
   .crawl-content p{font-size:clamp(14px, 4.2vw, 19px);line-height:1.42;letter-spacing:.05em;margin:0 auto 14px;max-width:88vw}
+  .warp-glyph{--w:clamp(120px, 32vw, 200px)}
+  .warp-glyph:nth-child(2),
+  .warp-glyph:nth-child(4),
+  .warp-glyph:nth-child(6),
+  .warp-glyph:nth-child(8){display:none}
+  @keyframes warpDrift{
+    0%  {transform:translateZ(0)}
+    100%{transform:translateZ(200px)}
+  }
   .tri.up{border-left-width:42px;border-right-width:42px;border-top-width:56px;transform:translate(-50%,-56px)}
   .tri.dn{border-left-width:42px;border-right-width:42px;border-bottom-width:56px;transform:translate(-50%,0)}
   body.activated .tri.up{transform:translate(-50%,-56px) rotate(180deg)}
@@ -1253,6 +1316,18 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
 </section>
 
 <section class="intro-crawl" id="introCrawl" aria-hidden="true" inert>
+  <div class="warp-tunnel" id="warpTunnel" aria-hidden="true">
+    <div class="warp-tunnel-inner">
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+      <i class="warp-glyph"></i>
+    </div>
+  </div>
   <div class="crawl-perspective">
     <article class="crawl-content" id="crawlContent">
       <div class="crawl-episode">EPISODE X</div>
