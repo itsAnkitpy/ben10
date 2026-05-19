@@ -1261,10 +1261,16 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .intro-begin,.intro-skip{font-size:10px;letter-spacing:.24em}
   .intro-skip{right:14px;bottom:14px}
   .crawl-replay{right:14px;bottom:58px}
-  .crawl-content{width:92vw;bottom:-126vh}
-  .crawl-episode{font-size:clamp(18px, 5vw, 28px);margin-bottom:8px}
-  .crawl-heading{font-size:clamp(28px, 9vw, 56px);margin-bottom:22px}
-  .crawl-content p{font-size:clamp(14px, 4.2vw, 19px);line-height:1.42;letter-spacing:.05em;margin:0 auto 14px;max-width:88vw}
+  .crawl-perspective{perspective:640px}
+  .crawl-content{width:94vw;bottom:-126vh;transform:rotateX(18deg) translateY(0)}
+  .crawl-episode{font-size:clamp(22px, 6.4vw, 34px);margin-bottom:10px}
+  .crawl-heading{font-size:clamp(38px, 11vw, 64px);margin-bottom:24px}
+  .crawl-content p{font-size:clamp(17px, 5vw, 22px);line-height:1.5;letter-spacing:.04em;margin:0 auto 16px;max-width:92vw}
+  @keyframes crawlScroll{
+    0%  {transform:rotateX(18deg) translateY(0)}
+    55% {transform:rotateX(18deg) translateY(-130vh)}
+    100%{transform:rotateX(18deg) translateY(-130vh)}
+  }
   .warp-glyph{--w:clamp(120px, 32vw, 200px)}
   .warp-glyph:nth-child(2),
   .warp-glyph:nth-child(4),
