@@ -32,6 +32,7 @@
   --green-hot:#a6ff5a;
   --green-deep:#1f6b0a;
   --green-mist:rgba(79,219,31,0.18);
+  --amber:#ffae34;
   --bone:#e8ffd8;
   --ink:#000;
   --hud:'Chakra Petch', system-ui, sans-serif;
@@ -1480,10 +1481,60 @@ body.viewing-omnitrix .omnitrix-panel{opacity:1;transform:none;transition-delay:
   .omnitrix-panel .engage-btn{align-self:center}
 }
 
+/* Module 5 — MASTER CONTROL mischief roulette */
+.omnitrix-controls .master-btn{border-color:var(--amber);color:var(--amber)}
+.omnitrix-controls .master-btn::before{content:"▸ "}
+.omnitrix-controls .master-btn:hover{
+  background:var(--amber);color:var(--ink);
+  box-shadow:0 0 16px var(--amber),0 0 32px rgba(255,174,52,.3);
+}
+.omnitrix-controls .master-btn:focus-visible{
+  outline:2px solid var(--amber);outline-offset:4px;
+  box-shadow:0 0 0 4px rgba(255,174,52,.2),0 0 18px rgba(255,174,52,.4);
+}
+
+/* Scramble — bezel spins ~4 revolutions, silhouette flickers, then settles */
+.omnitrix-watch--big.scrambling .bezel,
+.omnitrix-watch--big.scrambling .notches{animation:masterSpin 1.6s cubic-bezier(.15,.5,.2,1) forwards}
+@keyframes masterSpin{from{transform:rotate(0)}to{transform:rotate(1440deg)}}
+.omnitrix-watch--big.scrambling .notches{filter:blur(1.2px)}
+.omnitrix-watch--big.scrambling .omni-silhouette{animation:masterFlicker .16s steps(2) infinite}
+@keyframes masterFlicker{
+  0%{opacity:.6;filter:brightness(1.7) drop-shadow(0 0 16px var(--green-hot))}
+  100%{opacity:1;filter:drop-shadow(0 0 10px var(--green)) drop-shadow(0 0 26px var(--green-mist))}
+}
+
+/* Malfunction / lock-on callout (bottom, above the controls strip) */
+.master-callout{
+  position:fixed;left:50%;bottom:98px;transform:translateX(-50%) translateY(8px);
+  z-index:40;pointer-events:none;
+  font-family:var(--hud);font-weight:700;font-size:13px;letter-spacing:.22em;
+  text-transform:uppercase;text-align:center;
+  color:var(--green);
+  background:rgba(5,8,5,.84);border:1px solid var(--green);
+  backdrop-filter:blur(8px);padding:12px 22px;max-width:92vw;
+  clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  opacity:0;box-shadow:0 0 24px var(--green-mist);
+}
+.master-callout.show{animation:masterCallout 2.6s ease-out forwards}
+@keyframes masterCallout{
+  0%{opacity:0;transform:translateX(-50%) translateY(8px)}
+  9%{opacity:1;transform:translateX(-50%) translateY(0)}
+  84%{opacity:1}
+  100%{opacity:0}
+}
+.master-callout .warn{color:var(--amber)}
+.master-callout .ok{color:var(--green-hot)}
+.master-callout .nm{color:var(--bone)}
+@media (max-width:520px){
+  .master-callout{font-size:10px;letter-spacing:.12em;bottom:104px;white-space:normal}
+}
+
 /* Bottom controls strip (prev/next + MASTER CONTROL — filled by later modules) */
 .omnitrix-controls{
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
-  z-index:9;display:flex;align-items:center;gap:14px;
+  z-index:9;display:flex;align-items:center;justify-content:center;gap:14px;
+  flex-wrap:wrap;max-width:94vw;
   opacity:0;transition:opacity .5s;
 }
 body.viewing-omnitrix .omnitrix-controls{opacity:1;transition-delay:.7s}
@@ -1652,7 +1703,7 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
     <div class="tagline">IT'S HERO TIME</div>
     <nav class="nav">
       <a href="#aliens">Aliens</a>
-      <span class="nav-item" aria-disabled="true">Omnitrix</span>
+      <a href="#omnitrix">Omnitrix</a>
     </nav>
   </div>
 </div>
@@ -1725,12 +1776,16 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
   </div>
 </section>
 
-<!-- Omnitrix bottom controls (MASTER CONTROL joins in Module 5) -->
+<!-- Omnitrix bottom controls -->
 <div class="omnitrix-controls" id="omnitrixControls" aria-hidden="true" inert>
   <button id="omniPrev" type="button" aria-label="Previous alien">◀ TWIST</button>
   <span class="omni-index" id="omniIndex">01 / 13</span>
   <button id="omniNext" type="button" aria-label="Next alien">TWIST ▶</button>
+  <button id="masterControl" class="master-btn" type="button">MASTER CONTROL</button>
 </div>
+
+<!-- MASTER CONTROL "wanted X, got Y" malfunction callout -->
+<div class="master-callout" id="masterCallout" aria-hidden="true"></div>
 
 <!-- Locked-tab HUD flash -->
 <div class="hud-flash" id="hudFlash" aria-hidden="true"><div class="l1"></div><div class="l2"></div></div>
@@ -1896,6 +1951,7 @@ const focusableSelector = 'a[href], button, input, select, textarea, [role="butt
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
 const introStorageKey = 'ben10.introSeen';
 const voiceStorageKey = 'ben10.voiceEnabled';
+const masterControlStorageKey = 'ben10.masterControlSeen';
 const introMinimumMs = 31000;
 
 let introSkipTimer = null;
@@ -1983,7 +2039,7 @@ function syncA11yState(){
   setElementActive(stage, isWatchVisible);
   setWatchEnabled(isWatchVisible && !body.classList.contains('activated'));
   setElementActive(audioToggle, !isTransforming && !isIntroVisible);
-  setElementActive(voiceControl, voiceSupported && !isTransforming && !isIntroVisible);
+  setElementActive(voiceControl, voiceSupported && !isTransforming && !isIntroVisible && !isViewingOmnitrix);
   setElementActive(hero, isHeroVisible);
   setElementActive(replay, isHeroVisible);
   setElementActive(crawlReplay, isCrawlReplayVisible);
@@ -2845,6 +2901,7 @@ let currentEra = 'alien-force';   // default era on cold #omnitrix load
 let currentRoster = ALIEN_FORCE_ALIENS;
 let currentOmniIndex = 0;
 let hudFlashTimer;
+let masterCalloutTimer;
 
 function showHudFlash(line1, line2){
   hudFlash.querySelector('.l1').textContent = line1;
@@ -2925,6 +2982,77 @@ function renderOmnitrixAlien(){
 // ENGAGE TRANSFORM — plays the existing cinematic for the selected omnitrix alien.
 document.getElementById('omniEngage').addEventListener('click', () => engageTransform(currentRoster[currentOmniIndex]));
 
+// ── MASTER CONTROL roulette (Flavor B mischief) ──
+function masterControl(){
+  if(omniTurning || document.body.classList.contains('transforming')) return;
+  const requested = currentRoster[currentOmniIndex];
+
+  // Combined 46-alien pool across the three live eras.
+  const pool = [];
+  for(const [era, roster] of Object.entries(ERA_ROSTERS))
+    roster.forEach((alien, index) => pool.push({ era, index, alien }));
+
+  // First click of the session always misses (gag guaranteed on first encounter).
+  let forcedMiss = false;
+  try{
+    if(localStorage.getItem(masterControlStorageKey) !== 'true'){
+      forcedMiss = true;
+      localStorage.setItem(masterControlStorageKey, 'true');
+    }
+  }catch(e){}
+
+  const lucky = !forcedMiss && Math.random() < 0.20;   // 20% lock-on from click 2 onward
+  let deployed;
+  if(lucky){
+    deployed = { era: currentEra, index: currentOmniIndex, alien: requested };
+  }else{
+    const others = pool.filter(e => e.alien.id !== requested.id);   // never the requested one
+    deployed = others[Math.floor(Math.random() * others.length)];
+  }
+  runMasterScramble(requested, deployed, lucky, pool);
+}
+
+function runMasterScramble(requested, deployed, lucky, pool){
+  omniTurning = true;
+  const w = document.getElementById('omnitrixWatch');
+  const sil = document.getElementById('omniSilhouette');
+  w.classList.add('scrambling');
+  if(audioEnabled){ try{ sndDial.currentTime = 0; sndDial.play().catch(()=>{}); }catch(e){} }
+  showMasterCallout(requested, deployed.alien, lucky);
+
+  // Flicker the silhouette through random aliens during the spin.
+  let flicks = 0;
+  const flick = setInterval(() => {
+    sil.src = pool[Math.floor(Math.random() * pool.length)].alien.img;
+    if(++flicks >= 6) clearInterval(flick);
+  }, 200);
+
+  // Settle on the deployed alien (auto-switch era if cross-era), then transform.
+  setTimeout(() => {
+    clearInterval(flick);
+    w.classList.remove('scrambling');
+    if(deployed.era !== currentEra) selectEra(deployed.era);
+    currentOmniIndex = deployed.index;
+    renderOmnitrixAlien();
+    omniTurning = false;
+    engageTransform(deployed.alien);
+  }, 1800);
+}
+
+function showMasterCallout(requested, deployed, lucky){
+  const el = document.getElementById('masterCallout');
+  el.innerHTML = lucky
+    ? `<span class="ok">LOCK-ON CONFIRMED</span> · <span class="nm">${deployed.name}</span>`
+    : `OMNITRIX <span class="warn">MALFUNCTION</span> · REQUESTED: <span class="nm">${requested.name}</span> · DEPLOYED: <span class="nm">${deployed.name}</span>`;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+  clearTimeout(masterCalloutTimer);
+  masterCalloutTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+document.getElementById('masterControl').addEventListener('click', masterControl);
+
 // Twist the dial one step. dir: +1 next, -1 prev.
 let omniTurning = false;
 function turnDial(dir){
@@ -2960,6 +3088,12 @@ document.querySelectorAll('.nav a').forEach(link => {
       e.preventDefault();
       showAliens();
       history.replaceState(null, '', '#aliens');
+    });
+  }else if(href === '#omnitrix'){
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      showOmnitrix();
+      history.replaceState(null, '', '#omnitrix');
     });
   }
 });
