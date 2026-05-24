@@ -1956,7 +1956,7 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
     <button class="era-pill" type="button" role="tab" data-era="ben10" aria-selected="false">BEN 10</button>
     <button class="era-pill active" type="button" role="tab" data-era="alien-force" aria-selected="true">ALIEN FORCE</button>
     <button class="era-pill" type="button" role="tab" data-era="ultimate-alien" aria-selected="false">ULTIMATE ALIEN</button>
-    <button class="era-pill locked" type="button" data-era="omniverse" aria-disabled="true" title="Coming with the full reboot roster">OMNIVERSE</button>
+    <button class="era-pill" type="button" role="tab" data-era="omniverse" aria-selected="false">OMNIVERSE</button>
   </div>
 
   <div class="omnitrix-stage" id="omnitrixStage">
@@ -2522,41 +2522,62 @@ const OG_ALIENS_EXTENDED = [
 
 // ALIEN FORCE — 13
 const ALIEN_FORCE_ALIENS = [
-  { id:'swampfire',    name:'SWAMPFIRE',    short:'SWAMP', species:'Methanosian',      planet:'Methanos',          powers:'Fire / Plant',            debut:'AF · S1',           img:'assets/aliens/alien-force/swampfire.png',    bio:null, benQuote:null },
-  { id:'echoecho',     name:'ECHO ECHO',    short:'ECHO',  species:'Sonorosian',       planet:'Sonorosia',         powers:'Sonic Scream / Cloning',  debut:'AF · S1',           img:'assets/aliens/alien-force/echoecho.png',     bio:null, benQuote:null },
-  { id:'humungousaur', name:'HUMUNGOUSAUR', short:'SAUR',  species:'Vaxasaurian',      planet:'Terradino',         powers:'Strength / Size',         debut:'AF · S1',           img:'assets/aliens/alien-force/humungousaur.png', bio:null, benQuote:null },
-  { id:'jetray',       name:'JETRAY',       short:'JET',   species:'Aerophibian',      planet:'Aeropela',          powers:'Flight / Neuroshock',     debut:'AF · S1',           img:'assets/aliens/alien-force/jetray.png',       bio:null, benQuote:null },
-  { id:'bigchill',     name:'BIG CHILL',    short:'CHILL', species:'Necrofriggian',    planet:'Kylmys',            powers:'Ice / Intangibility',     debut:'AF · S1',           img:'assets/aliens/alien-force/bigchill.png',     bio:null, benQuote:null },
-  { id:'chromastone',  name:'CHROMASTONE',  short:'CHROMA',species:'Crystalsapien',    planet:'Petropia',          powers:'Energy Absorb / Beams',   debut:'AF · S1',           img:'assets/aliens/alien-force/chromastone.png',  bio:null, benQuote:null },
-  { id:'brainstorm',   name:'BRAINSTORM',   short:'BRAIN', species:'Cerebrocrustacean',planet:'Encephalonus IV',   powers:'Genius / Electrokinesis', debut:'AF · S1',           img:'assets/aliens/alien-force/brainstorm.png',   bio:null, benQuote:null },
-  { id:'spidermonkey', name:'SPIDERMONKEY', short:'SPIDR', species:'Arachnichimp',     planet:'Aranhaschimmia',    powers:'Webbing / Agility',       debut:'AF · S1',           img:'assets/aliens/alien-force/spidermonkey.png', bio:null, benQuote:null },
-  { id:'goop',         name:'GOOP',         short:'GOOP',  species:'Polymorph',        planet:'Viscosia',          powers:'Slime / Shapeshift',      debut:'AF · S1',           img:'assets/aliens/alien-force/goop.png',         bio:null, benQuote:null },
-  { id:'alienx',       name:'ALIEN X',      short:'X',     species:'Celestialsapien',  planet:'Forge of Creation', powers:'Reality Warping',         debut:'AF · S2',           img:'assets/aliens/alien-force/alienx.png',       bio:null, benQuote:null },
-  { id:'lodestar',     name:'LODESTAR',     short:'STAR',  species:'Biosovortian',     planet:'Unknown',           powers:'Magnetism',               debut:'AF · S3',           img:'assets/aliens/alien-force/lodestar.png',     bio:null, benQuote:null },
-  { id:'nanomech',     name:'NANOMECH',     short:'NANO',  species:'Unknown (hybrid)', planet:'None',              powers:'Shrinking / Energy Blast',debut:'AF · Alien Swarm',  img:'assets/aliens/alien-force/nanomech.png',     bio:null, benQuote:null },
-  { id:'rath',         name:'RATH',         short:'RATH',  species:'Appoplexian',      planet:'Appoplexia',        powers:'Strength / Rage',         debut:'AF · S3',           img:'assets/aliens/alien-force/rath.png',         bio:null, benQuote:null }
+  { id:'swampfire',    name:'SWAMPFIRE',    short:'SWAMP', species:'Methanosian',      planet:'Methanos',          powers:'Fire / Plant',            debut:'AF · S1',           img:'assets/aliens/alien-force/swampfire.webp',    bio:null, benQuote:null },
+  { id:'echoecho',     name:'ECHO ECHO',    short:'ECHO',  species:'Sonorosian',       planet:'Sonorosia',         powers:'Sonic Scream / Cloning',  debut:'AF · S1',           img:'assets/aliens/alien-force/echoecho.webp',     bio:null, benQuote:null },
+  { id:'humungousaur', name:'HUMUNGOUSAUR', short:'SAUR',  species:'Vaxasaurian',      planet:'Terradino',         powers:'Strength / Size',         debut:'AF · S1',           img:'assets/aliens/alien-force/humungousaur.webp', bio:null, benQuote:null },
+  { id:'jetray',       name:'JETRAY',       short:'JET',   species:'Aerophibian',      planet:'Aeropela',          powers:'Flight / Neuroshock',     debut:'AF · S1',           img:'assets/aliens/alien-force/jetray.webp',       bio:null, benQuote:null },
+  { id:'bigchill',     name:'BIG CHILL',    short:'CHILL', species:'Necrofriggian',    planet:'Kylmys',            powers:'Ice / Intangibility',     debut:'AF · S1',           img:'assets/aliens/alien-force/bigchill.webp',     bio:null, benQuote:null },
+  { id:'chromastone',  name:'CHROMASTONE',  short:'CHROMA',species:'Crystalsapien',    planet:'Petropia',          powers:'Energy Absorb / Beams',   debut:'AF · S1',           img:'assets/aliens/alien-force/chromastone.webp',  bio:null, benQuote:null },
+  { id:'brainstorm',   name:'BRAINSTORM',   short:'BRAIN', species:'Cerebrocrustacean',planet:'Encephalonus IV',   powers:'Genius / Electrokinesis', debut:'AF · S1',           img:'assets/aliens/alien-force/brainstorm.webp',   bio:null, benQuote:null },
+  { id:'spidermonkey', name:'SPIDERMONKEY', short:'SPIDR', species:'Arachnichimp',     planet:'Aranhaschimmia',    powers:'Webbing / Agility',       debut:'AF · S1',           img:'assets/aliens/alien-force/spidermonkey.webp', bio:null, benQuote:null },
+  { id:'goop',         name:'GOOP',         short:'GOOP',  species:'Polymorph',        planet:'Viscosia',          powers:'Slime / Shapeshift',      debut:'AF · S1',           img:'assets/aliens/alien-force/goop.webp',         bio:null, benQuote:null },
+  { id:'alienx',       name:'ALIEN X',      short:'X',     species:'Celestialsapien',  planet:'Forge of Creation', powers:'Reality Warping',         debut:'AF · S2',           img:'assets/aliens/alien-force/alienx.webp',       bio:null, benQuote:null },
+  { id:'lodestar',     name:'LODESTAR',     short:'STAR',  species:'Biosovortian',     planet:'Unknown',           powers:'Magnetism',               debut:'AF · S3',           img:'assets/aliens/alien-force/lodestar.webp',     bio:null, benQuote:null },
+  { id:'nanomech',     name:'NANOMECH',     short:'NANO',  species:'Unknown (hybrid)', planet:'None',              powers:'Shrinking / Energy Blast',debut:'AF · Alien Swarm',  img:'assets/aliens/alien-force/nanomech.webp',     bio:null, benQuote:null },
+  { id:'rath',         name:'RATH',         short:'RATH',  species:'Appoplexian',      planet:'Appoplexia',        powers:'Strength / Rage',         debut:'AF · S3',           img:'assets/aliens/alien-force/rath.webp',         bio:null, benQuote:null }
 ];
 
 // ULTIMATE ALIEN — 11
 const ULTIMATE_ALIEN_ALIENS = [
-  { id:'ampfibian',    name:'AMPFIBIAN',     short:'AMP',   species:'Amperi',           planet:'Tesslos',           powers:'Electricity / Aquatic',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/ampfibian.png',    bio:null, benQuote:null },
-  { id:'armodrillo',   name:'ARMODRILLO',    short:'DRILL', species:'Talpaedan',        planet:'Terraexcava',       powers:'Jackhammer / Strength',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/armodrillo.png',   bio:null, benQuote:null },
-  { id:'chamalien',    name:'CHAMALIEN',     short:'CHAM',  species:'Merlinisapien',    planet:'Unknown',           powers:'Camouflage / Agility',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/chamalien.png',    bio:null, benQuote:null },
-  { id:'clockwork',    name:'CLOCKWORK',     short:'CLOCK', species:'Chronosapien',     planet:'Unknown',           powers:'Time Control / Recall',   debut:'AF · S3',           img:'assets/aliens/ultimate-alien/clockwork.png',    bio:null, benQuote:null },
-  { id:'eatle',        name:'EATLE',         short:'EATLE', species:'Oryctini',         planet:'Coleop Terra',      powers:'Laser Blast / Strength',  debut:'UA · S1',           img:'assets/aliens/ultimate-alien/eatle.png',        bio:null, benQuote:null },
-  { id:'fasttrack',    name:'FASTTRACK',     short:'FAST',  species:'Citrakayah',       planet:'Chalybeas',         powers:'Super Speed',             debut:'UA · S1',           img:'assets/aliens/ultimate-alien/fasttrack.png',    bio:null, benQuote:null },
-  { id:'juryrigg',     name:'JURY RIGG',     short:'RIGG',  species:'Planchaküle',      planet:'Aul-Turrhen',       powers:'Sabotage / Repair',       debut:'UA · S3',           img:'assets/aliens/ultimate-alien/juryrigg.png',     bio:null, benQuote:null },
-  { id:'nrg',          name:'NRG',           short:'NRG',   species:'Prypiatosian-B',   planet:'Prypiatos',         powers:'Radiation / Armor',       debut:'UA · S1',           img:'assets/aliens/ultimate-alien/nrg.png',          bio:null, benQuote:null },
-  { id:'shocksquatch', name:'SHOCKSQUATCH',  short:'SHOCK', species:'Gimlinopithecus',  planet:'Pattersonea',       powers:'Electricity / Strength',  debut:'UA · S2',           img:'assets/aliens/ultimate-alien/shocksquatch.png', bio:null, benQuote:null },
-  { id:'terraspin',    name:'TERRASPIN',     short:'SPIN',  species:'Geochelone Aerio', planet:'Aldabra',           powers:'Wind / Flight',           debut:'UA · S1',           img:'assets/aliens/ultimate-alien/terraspin.png',    bio:null, benQuote:null },
-  { id:'waterhazard',  name:'WATER HAZARD',  short:'WATER', species:'Orishan',          planet:'Kiusana',           powers:'Water Blasts / Armor',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/waterhazard.png',  bio:null, benQuote:null }
+  { id:'ampfibian',    name:'AMPFIBIAN',     short:'AMP',   species:'Amperi',           planet:'Tesslos',           powers:'Electricity / Aquatic',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/ampfibian.webp',    bio:null, benQuote:null },
+  { id:'armodrillo',   name:'ARMODRILLO',    short:'DRILL', species:'Talpaedan',        planet:'Terraexcava',       powers:'Jackhammer / Strength',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/armodrillo.webp',   bio:null, benQuote:null },
+  { id:'chamalien',    name:'CHAMALIEN',     short:'CHAM',  species:'Merlinisapien',    planet:'Unknown',           powers:'Camouflage / Agility',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/chamalien.webp',    bio:null, benQuote:null },
+  { id:'clockwork',    name:'CLOCKWORK',     short:'CLOCK', species:'Chronosapien',     planet:'Unknown',           powers:'Time Control / Recall',   debut:'AF · S3',           img:'assets/aliens/ultimate-alien/clockwork.webp',    bio:null, benQuote:null },
+  { id:'eatle',        name:'EATLE',         short:'EATLE', species:'Oryctini',         planet:'Coleop Terra',      powers:'Laser Blast / Strength',  debut:'UA · S1',           img:'assets/aliens/ultimate-alien/eatle.webp',        bio:null, benQuote:null },
+  { id:'fasttrack',    name:'FASTTRACK',     short:'FAST',  species:'Citrakayah',       planet:'Chalybeas',         powers:'Super Speed',             debut:'UA · S1',           img:'assets/aliens/ultimate-alien/fasttrack.webp',    bio:null, benQuote:null },
+  { id:'juryrigg',     name:'JURY RIGG',     short:'RIGG',  species:'Planchaküle',      planet:'Aul-Turrhen',       powers:'Sabotage / Repair',       debut:'UA · S3',           img:'assets/aliens/ultimate-alien/juryrigg.webp',     bio:null, benQuote:null },
+  { id:'nrg',          name:'NRG',           short:'NRG',   species:'Prypiatosian-B',   planet:'Prypiatos',         powers:'Radiation / Armor',       debut:'UA · S1',           img:'assets/aliens/ultimate-alien/nrg.webp',          bio:null, benQuote:null },
+  { id:'shocksquatch', name:'SHOCKSQUATCH',  short:'SHOCK', species:'Gimlinopithecus',  planet:'Pattersonea',       powers:'Electricity / Strength',  debut:'UA · S2',           img:'assets/aliens/ultimate-alien/shocksquatch.webp', bio:null, benQuote:null },
+  { id:'terraspin',    name:'TERRASPIN',     short:'SPIN',  species:'Geochelone Aerio', planet:'Aldabra',           powers:'Wind / Flight',           debut:'UA · S1',           img:'assets/aliens/ultimate-alien/terraspin.webp',    bio:null, benQuote:null },
+  { id:'waterhazard',  name:'WATER HAZARD',  short:'WATER', species:'Orishan',          planet:'Kiusana',           powers:'Water Blasts / Armor',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/waterhazard.webp',  bio:null, benQuote:null }
 ];
 
-// Era key → roster (consumed by the era selector; Omniverse is locked, no roster)
+// OMNIVERSE — 16 (canon verified against Ben 10 wiki; debut = OV story arc)
+const OMNIVERSE_ALIENS = [
+  { id:'feedback',    name:'FEEDBACK',     short:'FEED',   species:'Conductoid',        planet:'Teslavorr',                   powers:'Energy Absorb / Electrokinesis', debut:'OV · S1', img:'assets/aliens/omniverse/feedback.webp',    bio:null, benQuote:null },
+  { id:'bloxx',       name:'BLOXX',        short:'BLOXX',  species:'Segmentasapien',    planet:'Polyominus',                  powers:'Block Shapeshift / Stretch',     debut:'OV · S1', img:'assets/aliens/omniverse/bloxx.webp',       bio:null, benQuote:null },
+  { id:'gravattack',  name:'GRAVATTACK',   short:'GRAV',   species:'Galilean',          planet:'Keplorr',                     powers:'Gravity Control / Strength',     debut:'OV · S1', img:'assets/aliens/omniverse/gravattack.webp',  bio:null, benQuote:null },
+  { id:'crashhopper', name:'CRASHHOPPER',  short:'HOP',    species:'Orthopterran',      planet:'Unknown',                     powers:'Super Jump / Climbing',          debut:'OV · S1', img:'assets/aliens/omniverse/crashhopper.webp', bio:null, benQuote:null },
+  { id:'ballweevil',  name:'BALL WEEVIL',  short:'WEEVIL', species:'Unknown',           planet:'Unknown',                     powers:'Plasma Bombs / Adhesive',        debut:'OV · S1', img:'assets/aliens/omniverse/ballweevil.webp',  bio:null, benQuote:null },
+  { id:'walkatrout',  name:'WALKATROUT',   short:'TROUT',  species:'Ickthyperambuloid', planet:'Gilli-Perambulous Promenade', powers:'Aquatic / Agility',              debut:'OV · S2', img:'assets/aliens/omniverse/walkatrout.webp',  bio:null, benQuote:null },
+  { id:'kickinhawk',  name:'KICKIN HAWK',  short:'HAWK',   species:'Unknown',           planet:'Unknown',                     powers:'Martial Arts / Talons',          debut:'OV · S2', img:'assets/aliens/omniverse/kickinhawk.webp',  bio:null, benQuote:null },
+  { id:'molestache',  name:'MOLE-STACHE',  short:'STACHE', species:'Unknown',           planet:'Unknown',                     powers:'Prehensile Mustache',            debut:'OV · S2', img:'assets/aliens/omniverse/molestache.webp',  bio:null, benQuote:null },
+  { id:'peskydust',   name:'PESKY DUST',   short:'DUST',   species:'Nemuina',           planet:'Nemunimos IV',                powers:'Sleep Dust / Dream Control',     debut:'OV · S2', img:'assets/aliens/omniverse/peskydust.webp',   bio:null, benQuote:null },
+  { id:'toepick',     name:'TOEPICK',      short:'TOE',    species:'Unknown',           planet:'Unknown',                     powers:'Fear-Inducing Face',             debut:'OV · S2', img:'assets/aliens/omniverse/toepick.webp',     bio:null, benQuote:null },
+  { id:'theworst',    name:'THE WORST',    short:'WORST',  species:'Atrocian',          planet:'Atrocius 0',                  powers:'Near-Indestructible',            debut:'OV · S2', img:'assets/aliens/omniverse/theworst.webp',    bio:null, benQuote:null },
+  { id:'astrodactyl', name:'ASTRODACTYL',  short:'ASTRO',  species:'Unknown',           planet:'Unknown',                     powers:'Flight / Energy Whips',          debut:'OV · S3', img:'assets/aliens/omniverse/astrodactyl.webp', bio:null, benQuote:null },
+  { id:'bullfrag',    name:'BULLFRAG',     short:'FROG',   species:'Incursean',         planet:'Incursea',                    powers:'Leaping / Long Tongue',          debut:'OV · S3', img:'assets/aliens/omniverse/bullfrag.webp',    bio:null, benQuote:null },
+  { id:'atomix',      name:'ATOMIX',       short:'ATOM',   species:'Unknown',           planet:'Unknown',                     powers:'Nuclear Blasts / Flight',        debut:'OV · S4', img:'assets/aliens/omniverse/atomix.webp',      bio:null, benQuote:null },
+  { id:'gutrot',      name:'GUTROT',       short:'GUT',    species:'Unknown',           planet:'Unknown',                     powers:'Chemical Gas Attacks',           debut:'OV · S5', img:'assets/aliens/omniverse/gutrot.webp',      bio:null, benQuote:null },
+  { id:'whampire',    name:'WHAMPIRE',     short:'VAMP',   species:'Vladat',            planet:'Anur Vladias',                powers:'Hypnosis / Energy Drain',        debut:'OV · S5', img:'assets/aliens/omniverse/whampire.webp',    bio:null, benQuote:null }
+];
+
+// Era key → roster (consumed by the era selector)
 const ERA_ROSTERS = {
   'ben10':          OG_ALIENS_EXTENDED,
   'alien-force':    ALIEN_FORCE_ALIENS,
-  'ultimate-alien': ULTIMATE_ALIEN_ALIENS
+  'ultimate-alien': ULTIMATE_ALIEN_ALIENS,
+  'omniverse':      OMNIVERSE_ALIENS
 };
 
 const HERO_VOICE_PHRASES = ['its hero time', 'hero time', 'activate'];
@@ -3144,9 +3165,6 @@ function hideAliens(){
 }
 
 // ───────── Omnitrix Archive ─────────
-const ERA_FLASH = {
-  omniverse: ['OMNIVERSE · LOCKED', 'Coming with the full reboot roster']
-};
 let currentEra = 'alien-force';   // default era on cold #omnitrix load
 let currentRoster = ALIEN_FORCE_ALIENS;
 let currentOmniIndex = 0;
@@ -3164,10 +3182,6 @@ function showHudFlash(line1, line2){
 }
 
 function selectEra(era){
-  if(era === 'omniverse'){
-    showHudFlash(...ERA_FLASH.omniverse);
-    return;
-  }
   currentEra = era;
   currentRoster = ERA_ROSTERS[era];
   currentOmniIndex = 0;
@@ -3184,7 +3198,7 @@ eraSelector.addEventListener('click', e => {
   if(pill) selectEra(pill.dataset.era);
 });
 eraSelector.addEventListener('keydown', e => {
-  if(e.key !== 'Enter' && e.key !== ' ') return;     // locked-tab flash on Enter/Space
+  if(e.key !== 'Enter' && e.key !== ' ') return;     // activate era pill on Enter/Space
   const pill = e.target.closest('.era-pill');
   if(!pill) return;
   e.preventDefault();
@@ -3239,7 +3253,7 @@ function masterControl(){
   if(omniTurning || document.body.classList.contains('transforming')) return;
   const requested = currentRoster[currentOmniIndex];
 
-  // Combined 46-alien pool across the three live eras.
+  // Combined 62-alien pool across the four live eras (built from ERA_ROSTERS).
   const pool = [];
   for(const [era, roster] of Object.entries(ERA_ROSTERS))
     roster.forEach((alien, index) => pool.push({ era, index, alien }));
