@@ -1304,6 +1304,55 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .center-panel{width:54%}
   .aliens-header{font-size:10px;letter-spacing:.32em}
   .aliens-header::before,.aliens-header::after{width:18px}
+
+  /* ── Hero nav buttons ── */
+  .nav{gap:6px}
+  .nav a,
+  .nav .nav-item{
+    font-size:11px;letter-spacing:.28em;
+    padding:12px 18px;
+  }
+
+  /* ── Dial bottom controls ── */
+  .dial-controls{
+    bottom:18px;gap:8px;
+    flex-wrap:nowrap;
+  }
+  .dial-controls button{
+    font-size:10px;letter-spacing:.2em;
+    padding:9px 12px;
+  }
+  .dial-controls .index{
+    font-size:10px;letter-spacing:.24em;
+    padding:0 8px;min-width:62px;
+  }
+
+  /* ── Omnitrix watch (scale down on mobile) ── */
+  .omnitrix-watch--big{
+    width:min(64vmin, 300px);
+  }
+
+  /* ── Transform cinematic ── */
+  .transform-name{
+    font-size:clamp(36px, 9vw, 80px);
+    bottom:18%;
+  }
+  .transform-dismiss{
+    bottom:20px;
+    font-size:10px;letter-spacing:.28em;
+    padding:10px 16px;
+  }
+  .transform-alien{
+    height:min(52vh, 420px);
+  }
+
+  /* ── Replay / Crawl Replay ── */
+  .replay button{font-size:10px;letter-spacing:.24em;padding:8px 12px 8px 30px}
+  .replay button::before{left:10px;width:12px;height:12px}
+
+  /* Push REPLAY INTRO above the dial-controls when on the aliens page */
+  body.viewing-aliens .crawl-replay{bottom:62px}
+  .crawl-replay button{font-size:9px;letter-spacing:.2em;padding:8px 12px}
 }
 
 /* ═════════ Omnitrix Archive — era-tabbed alien showcase (PRD: omnitrix-archive.md) ═════════ */
@@ -1573,6 +1622,141 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;transition-delay:.7s}
   .omnitrix-page{padding:74px 16px 96px}
   .hud-flash .l1{font-size:12px;letter-spacing:.28em}
   .hud-flash .l2{font-size:9px;letter-spacing:.14em}
+
+  /* ── Omnitrix bottom controls ── */
+  .omnitrix-controls{
+    bottom:16px;gap:8px;
+    flex-wrap:nowrap;
+    max-width:100vw;
+    padding:0 8px;
+  }
+  .omnitrix-controls button{
+    font-size:9px;letter-spacing:.18em;
+    padding:9px 10px;
+    white-space:nowrap;
+  }
+  .omnitrix-controls .master-btn{
+    font-size:8px;letter-spacing:.14em;
+    padding:9px 10px;
+  }
+  .omni-index{
+    font-size:10px;letter-spacing:.24em;
+    padding:0 6px;min-width:60px;
+  }
+
+  /* ── Omnitrix stage stacked layout ── */
+  .omnitrix-stage{
+    gap:16px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .omnitrix-watch--big{
+    width:min(56vmin, 260px);
+  }
+
+  /* ── Panel data tweaks ── */
+  .op-name{font-size:clamp(22px, 5vw, 32px)}
+  .op-bio{font-size:12px}
+  .op-quote{font-size:12px}
+  .op-stat .row{font-size:10px}
+  .omnitrix-panel .engage-btn{font-size:10px;padding:9px 14px}
+
+  /* ── Master callout ── */
+  .master-callout{font-size:10px;letter-spacing:.12em;bottom:68px;white-space:normal;max-width:90vw}
+}
+
+/* ═══ Ultra-narrow phones (≤380px) ═══ */
+@media (max-width:380px){
+  .control-cluster{
+    top:10px;right:10px;gap:4px;
+    flex-direction:column;align-items:flex-end;
+  }
+  .audio-toggle,.voice-toggle{
+    font-size:8px;letter-spacing:.14em;
+    padding:7px 8px;
+  }
+  .voice-toggle{min-width:90px}
+
+  .nav a,
+  .nav .nav-item{
+    font-size:10px;letter-spacing:.2em;
+    padding:10px 14px;
+  }
+
+  .brand{font-size:clamp(60px, 16vw, 120px)}
+  .tagline{font-size:clamp(10px, 2.8vw, 13px);letter-spacing:.3em;gap:10px}
+  .tagline::before,.tagline::after{width:24px}
+
+  .dial{--dial-size:min(86vmin, 320px)}
+  .slot{width:58px;height:58px;margin:-29px 0 0 -29px}
+  .slot-disc{width:44px;height:44px}
+  .slot-name{font-size:7px;letter-spacing:.12em}
+  .center-panel{width:48%}
+  .center-name{font-size:clamp(16px, 3vmin, 22px)}
+  .center-stat .label{font-size:7px;letter-spacing:.2em}
+  .center-stat .value{font-size:clamp(8px, 1.4vmin, 10px)}
+  .engage-btn{font-size:9px;padding:8px 12px;letter-spacing:.22em}
+
+  .dial-controls button{font-size:9px;padding:8px 10px;letter-spacing:.16em}
+  .dial-controls .index{font-size:9px;min-width:52px;padding:0 6px}
+
+  .omnitrix-controls button{font-size:8px;padding:8px 8px;letter-spacing:.14em}
+  .omnitrix-controls .master-btn{font-size:7px;padding:8px 8px;letter-spacing:.1em}
+  .omni-index{font-size:9px;padding:0 4px;min-width:48px}
+
+  .era-selector{max-width:300px;gap:6px}
+  .era-pill{padding:10px 6px;font-size:9px;letter-spacing:.14em}
+
+  .omnitrix-watch--big{width:min(52vmin, 220px)}
+  .op-name{font-size:clamp(18px, 4.5vw, 26px)}
+  .op-sub{font-size:10px;letter-spacing:.16em}
+  .omnitrix-panel .engage-btn{font-size:9px;padding:8px 12px}
+
+  .transform-name{font-size:clamp(28px, 8vw, 56px);bottom:22%}
+  .transform-dismiss{bottom:14px;font-size:9px;padding:9px 14px;letter-spacing:.22em}
+  .transform-alien{height:min(44vh, 340px)}
+
+  .aliens-header{font-size:8px;letter-spacing:.2em}
+  .back-btn{font-size:10px;padding:8px 12px 8px 24px;letter-spacing:.22em}
+  .back-btn::before{left:10px;width:6px;height:6px}
+
+  .master-callout{font-size:9px;letter-spacing:.08em;bottom:60px;padding:10px 14px}
+
+  .hud-corner{display:none}
+
+  .replay button{font-size:9px;letter-spacing:.2em;padding:7px 10px 7px 26px}
+  .intro-gate-panel{padding:22px 14px;width:min(580px, calc(100vw - 24px))}
+  .intro-title{font-size:clamp(28px, 8vw, 50px)}
+
+  body.viewing-aliens .crawl-replay{bottom:56px}
+}
+
+/* ═══ Short screens / landscape phones ═══ */
+@media (max-height:500px){
+  .transform-alien{height:min(40vh, 260px)}
+  .transform-name{font-size:clamp(24px, 6vw, 48px);bottom:14%}
+  .transform-dismiss{bottom:10px;padding:8px 14px;font-size:9px}
+
+  .hero-inner{gap:24px;padding:20px 16px}
+  .brand{font-size:clamp(48px, 12vw, 100px)}
+  .tagline{font-size:clamp(9px, 1.8vw, 13px)}
+
+  .omnitrix-page{padding:60px 16px 80px}
+  .omnitrix-stage{gap:12px}
+  .omnitrix-watch--big{width:min(38vmin, 200px)}
+  .omnitrix-panel{max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+  .aliens-page{padding:60px 16px 32px}
+  .dial{--dial-size:min(60vmin, 340px)}
+
+  .hint{bottom:-40px;font-size:10px}
+}
+
+/* Landscape + narrow height combo (phones rotated) */
+@media (max-height:420px) and (orientation:landscape){
+  .omnitrix-stage{flex-direction:row;gap:20px;overflow-y:hidden}
+  .omnitrix-watch--big{width:min(36vmin, 200px)}
+  .omnitrix-panel{width:min(40vw, 280px);max-height:none;overflow-y:auto}
 }
 
 /* Suppress transitions/animations during initial deep-link boot so we don't flash through states */
