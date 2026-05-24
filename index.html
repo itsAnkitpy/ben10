@@ -1253,6 +1253,40 @@ body.transforming .transform-name{animation:transformNameSlam .7s cubic-bezier(.
 body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forwards;animation-delay:1.1s}
 @keyframes dismissFade{to{opacity:.85}}
 
+/* Season-1 Omnitrix timeout: red alarm. Blink (~1.4Hz vignette) through the audio, then a full-red blast. */
+.timeout-flash{
+  position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,
+    transparent 30%,
+    rgba(200,0,0,.55) 80%,
+    rgba(140,0,0,.92) 100%);
+}
+/* Phase 1 — alarm blink, loops for the full audio. 0.7s cycle = ~1.4 flashes/sec, under the 3/sec line. */
+body.timing-out .timeout-flash{animation:timeoutBlink .7s ease-in-out infinite}
+@keyframes timeoutBlink{
+  0%,100%{opacity:.18}
+  50%    {opacity:.9}
+}
+/* Phase 2 — the red blast: fuller, brighter red, one surge, then clears as we revert. */
+body.timing-out-blast .timeout-flash{
+  background:radial-gradient(ellipse at center,
+    rgba(255,48,48,.94) 0%,
+    rgba(205,0,0,.96) 55%,
+    rgba(120,0,0,.99) 100%);
+  animation:timeoutBlast .8s ease-out forwards;
+}
+@keyframes timeoutBlast{
+  0%  {opacity:.4}
+  22% {opacity:1}
+  100%{opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  /* Global rule collapses both animations to ~0ms — no flashing. Hold static red washes instead so the
+     beat still reads for motion-sensitive users; the blast phase holds a stronger wash than the blink. */
+  body.timing-out .timeout-flash{animation:none;opacity:.45}
+  body.timing-out-blast .timeout-flash{animation:none;opacity:.72}
+}
+
 @media (max-width: 520px){
   .control-cluster{top:14px;right:14px;gap:6px}
   .audio-toggle,.voice-toggle{font-size:9px;letter-spacing:.2em;padding:9px 10px}
@@ -1981,6 +2015,7 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
   <img class="transform-alien" id="transformAlien" src="" alt="" draggable="false">
   <h1 class="transform-name" id="transformName"></h1>
   <button class="transform-dismiss" id="transformDismiss" type="button">REVERT</button>
+  <div class="timeout-flash" aria-hidden="true"></div>
 </div>
 
 <div class="hud-corner tl">OMNITRIX <span>v.10.0 / GALVAN TECH</span></div>
@@ -2037,8 +2072,9 @@ let cutAllTimer = null;
 const sndActivation = new Audio('audio/omnitrix-activation.mp3');
 const sndFlash = new Audio('audio/omnitrix-flash.mp3');
 const sndDial = new Audio('audio/dial_turning.mp3');
+const sndTimeout = new Audio('audio/timeout.mp3');
 const sndIntro = new Audio('audio/intro.mp3');
-[sndActivation, sndFlash, sndDial].forEach(a => {
+[sndActivation, sndFlash, sndDial, sndTimeout].forEach(a => {
   a.preload = 'auto';
   a.loop = false;
 });
@@ -2047,6 +2083,7 @@ sndIntro.loop = false;
 sndActivation.volume = 0.9;
 sndFlash.volume = 0.85;
 sndDial.volume = 0.7;
+sndTimeout.volume = 0.9;
 sndIntro.volume = 0.95;
 
 // Smooth fade-out helper so cuts don't sound like guillotine drops
@@ -2096,7 +2133,7 @@ function clearAudioTimers(){
 
 function stopAllAudio(){
   clearAudioTimers();
-  const defaults = new Map([[sndActivation, 0.9], [sndFlash, 0.85], [sndDial, 0.7]]);
+  const defaults = new Map([[sndActivation, 0.9], [sndFlash, 0.85], [sndDial, 0.7], [sndTimeout, 0.9]]);
   defaults.forEach((vol, a) => {
     try{ a.pause(); a.currentTime = 0; a.volume = vol; }catch(e){}
   });
@@ -2292,7 +2329,8 @@ function resetToIdleWatch(){
   stopIntroAudio();
   stopVoice();
   stopVoiceListening();
-  body.classList.remove('activated','flashing','revealed','viewing-aliens','engaging','transforming');
+  clearTimeout(timeoutTimer);
+  body.classList.remove('activated','flashing','revealed','viewing-aliens','engaging','transforming','timing-out','timing-out-blast');
   document.getElementById('transformAlien').src = '';
   document.getElementById('transformName').textContent = '';
   setTimeout(buildKirby, 50);
@@ -2996,6 +3034,10 @@ function selectAlien(i){
 }
 
 let engageTimer = null;
+let timeoutTimer = null;
+const TIMEOUT_HOLD_MS = 7000;    // how long the alien holds before the watch times out
+const TIMEOUT_BLINK_MS = 3200;   // blink runs through the audible body of timeout.mp3 (loud part ends ~3.5s; file has ~2s decay+silence tail)
+const TIMEOUT_BLAST_MS = 800;    // blast peaks ~3.4s as the sound resolves, then auto-revert (~4.0s)
 let currentVoice = null;
 
 function stopVoice(){
@@ -3007,7 +3049,9 @@ function stopVoice(){
 
 function engageTransform(alien){
   clearTimeout(engageTimer);
-  document.body.classList.remove('engaging', 'transforming');
+  clearTimeout(timeoutTimer);
+  try{ sndTimeout.pause(); sndTimeout.currentTime = 0; }catch(e){}
+  document.body.classList.remove('engaging', 'transforming', 'timing-out', 'timing-out-blast');
   syncA11yState();
   void document.body.offsetWidth;
   document.body.classList.add('engaging');
@@ -3041,14 +3085,33 @@ function engageTransform(alien){
       }catch(e){ currentVoice = null; }
     }
   }
+
+  timeoutTimer = setTimeout(triggerTimeout, TIMEOUT_HOLD_MS);
+}
+
+function triggerTimeout(){
+  if(!document.body.classList.contains('transforming')) return;
+  stopVoice();
+  document.body.classList.add('timing-out');
+  if(audioEnabled){
+    try{ sndTimeout.currentTime = 0; sndTimeout.play().catch(()=>{}); }catch(e){}
+  }
+  // Blink alarm through the audio, then a red blast, then return to the screen they engaged from.
+  timeoutTimer = setTimeout(() => {
+    document.body.classList.remove('timing-out');
+    document.body.classList.add('timing-out-blast');
+    timeoutTimer = setTimeout(dismissTransform, TIMEOUT_BLAST_MS);
+  }, TIMEOUT_BLINK_MS);
 }
 
 function dismissTransform(){
   if(!document.body.classList.contains('transforming')) return;
-  document.body.classList.remove('transforming');
+  clearTimeout(timeoutTimer);
+  document.body.classList.remove('transforming', 'timing-out', 'timing-out-blast');
   syncA11yState();
   stopVoice();
   fadeOut(sndFlash, 250);
+  fadeOut(sndTimeout, 250);
   const engageReturn = document.body.classList.contains('viewing-omnitrix')
     ? document.getElementById('omniEngage')
     : document.getElementById('engageBtn');
@@ -3070,11 +3133,13 @@ function showAliens(){
 }
 
 function hideAliens(){
-  document.body.classList.remove('viewing-aliens', 'engaging', 'transforming');
+  clearTimeout(timeoutTimer);
+  document.body.classList.remove('viewing-aliens', 'engaging', 'transforming', 'timing-out', 'timing-out-blast');
   syncA11yState();
   stopVoice();
   fadeOut(sndDial, 200);
   fadeOut(sndFlash, 250);
+  fadeOut(sndTimeout, 250);
   focusVisibleElement(document.querySelector('.nav a[href="#aliens"]'));
 }
 
@@ -3135,9 +3200,11 @@ function showOmnitrix(){
 }
 
 function hideOmnitrix(){
-  document.body.classList.remove('viewing-omnitrix', 'engaging', 'transforming');
+  clearTimeout(timeoutTimer);
+  document.body.classList.remove('viewing-omnitrix', 'engaging', 'transforming', 'timing-out', 'timing-out-blast');
   syncA11yState();
   stopVoice();
+  fadeOut(sndTimeout, 250);
   focusVisibleElement(document.querySelector('.nav a[href="#omnitrix"]') || document.querySelector('.nav a'));
 }
 
