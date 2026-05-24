@@ -1164,7 +1164,9 @@ body.transforming .transform-stage{opacity:1;pointer-events:auto}
 body.transforming .aliens-page,
 body.transforming .aliens-header,
 body.transforming .back-btn,
-body.transforming .dial-controls{
+body.transforming .dial-controls,
+body.transforming .omnitrix-page,
+body.transforming .omnitrix-controls{
   opacity:0;pointer-events:none;
   transition:opacity .25s ease-out;
 }
@@ -1301,6 +1303,225 @@ body.transforming .transform-dismiss{animation:dismissFade .45s ease-out forward
   .center-panel{width:54%}
   .aliens-header{font-size:10px;letter-spacing:.32em}
   .aliens-header::before,.aliens-header::after{width:18px}
+}
+
+/* ═════════ Omnitrix Archive — era-tabbed alien showcase (PRD: omnitrix-archive.md) ═════════ */
+.omnitrix-page{
+  position:fixed;inset:0;z-index:7;
+  display:flex;flex-direction:column;align-items:center;gap:clamp(20px,4vmin,42px);
+  pointer-events:none;opacity:0;
+  transition:opacity .5s ease-out;
+  padding:88px 24px 112px;
+  overflow:hidden;
+}
+body.viewing-omnitrix .omnitrix-page{opacity:1;pointer-events:auto;transition-delay:.3s}
+body.viewing-omnitrix .hero{opacity:0;pointer-events:none;transition-delay:0s}
+body.viewing-omnitrix .replay{opacity:0;pointer-events:none;transition-delay:0s}
+body.viewing-omnitrix .hud-corner{opacity:0;transition-delay:0s}
+body.viewing-omnitrix .back-btn{opacity:1;pointer-events:auto;transition-delay:.5s}
+
+/* Era selector — single row of pills (desktop), 2×2 grid (≤520px) */
+.era-selector{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  opacity:0;transform:translateY(-8px);
+  transition:opacity .5s, transform .5s;
+}
+body.viewing-omnitrix .era-selector{opacity:1;transform:none;transition-delay:.5s}
+.era-pill{
+  position:relative;
+  font-family:var(--hud);font-weight:600;font-size:12px;letter-spacing:.3em;
+  color:var(--bone);text-transform:uppercase;
+  padding:13px 26px;
+  border:1px solid var(--metal-3);
+  background:rgba(10,13,10,.6);
+  backdrop-filter:blur(6px);
+  cursor:pointer;
+  transition:all .25s;
+  clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+}
+.era-pill:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
+.era-pill.active{
+  border-color:var(--green);color:var(--green);
+  background:rgba(31,107,10,.2);
+  box-shadow:0 0 16px var(--green-mist), inset 0 0 16px var(--green-mist);
+}
+.era-pill.locked{
+  cursor:not-allowed;
+  color:rgba(232,255,216,.42);
+  border-color:rgba(90,96,90,.45);
+}
+.era-pill.locked:hover{box-shadow:none}
+.era-pill.locked::after{
+  content:"INCOMING";
+  position:absolute;top:-8px;right:-6px;
+  font-family:var(--hud);font-weight:700;font-size:7px;letter-spacing:.16em;
+  color:var(--ink);background:var(--green-deep);
+  padding:2px 5px;
+  box-shadow:0 0 8px var(--green-mist);
+}
+
+/* Watch + side-panel stage — side-by-side ≥1024px, stacked below */
+.omnitrix-stage{
+  flex:1;min-height:0;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,72px);
+}
+.omnitrix-watch-area{display:grid;place-items:center;flex:0 0 auto}
+.omnitrix-panel{flex:0 0 auto}
+@media (max-width:1024px){
+  .omnitrix-stage{flex-direction:column;gap:24px;overflow-y:auto}
+}
+
+/* Module 2 — the bigger Omnitrix watch (reuses .body-ring/.bezel/.notches/.rim-light) */
+.omnitrix-watch--big{
+  position:relative;display:grid;place-items:center;
+  width:min(70vmin,560px);aspect-ratio:1/1;
+}
+.omnitrix-watch--big .body-ring{width:100%}
+.omnitrix-watch--big .rim-light{opacity:.85}
+/* lit "active" face — the omnitrix page never carries the .activated class */
+.omnitrix-watch--big .face{
+  box-shadow:
+    inset 0 0 0 3px #000,
+    inset 0 0 0 5px var(--green-deep),
+    inset 0 0 36px rgba(79,219,31,.28),
+    0 14px 44px rgba(0,0,0,.7),
+    0 0 60px var(--green-mist);
+}
+.omnitrix-watch--big .face::before{
+  border-color:var(--green);
+  box-shadow:inset 0 0 24px rgba(79,219,31,.32), 0 0 18px var(--green-mist);
+}
+/* the single alien silhouette on the face (replaces the hero hourglass) */
+.omni-silhouette{
+  position:relative;z-index:1;
+  width:74%;height:74%;object-fit:contain;
+  filter:drop-shadow(0 0 10px var(--green)) drop-shadow(0 0 26px var(--green-mist));
+}
+/* green selector dot — rests at 12 o'clock, marks the active alien */
+.omnitrix-watch--big .selector-dot{
+  position:absolute;top:-1%;left:50%;transform:translateX(-50%);
+  width:5.5%;aspect-ratio:1/1;border-radius:50%;z-index:6;
+  background:radial-gradient(circle,var(--bone) 0%,var(--green-hot) 35%,var(--green) 65%,var(--green-deep) 100%);
+  box-shadow:0 0 14px var(--green-hot),0 0 30px var(--green);
+}
+
+/* Dial-turn — bezel + notches twist 60°, silhouette crossfades mid-turn */
+.omnitrix-watch--big[data-rotating="forward"] .bezel,
+.omnitrix-watch--big[data-rotating="forward"] .notches{animation:dialTurnForward .6s cubic-bezier(.35,.05,.4,.95)}
+.omnitrix-watch--big[data-rotating="back"] .bezel,
+.omnitrix-watch--big[data-rotating="back"] .notches{animation:dialTurnBack .6s cubic-bezier(.35,.05,.4,.95)}
+@keyframes dialTurnForward{from{transform:rotate(0)}to{transform:rotate(60deg)}}
+@keyframes dialTurnBack{from{transform:rotate(0)}to{transform:rotate(-60deg)}}
+.omnitrix-watch--big[data-rotating] .notches{filter:blur(.5px)}   /* slight motion blur */
+.omnitrix-watch--big[data-rotating] .omni-silhouette{animation:omniSwap .6s ease}
+@keyframes omniSwap{
+  0%{opacity:1}
+  33%{opacity:0}    /* dissolved out by ~200ms */
+  50%{opacity:0}    /* image swapped at ~300ms */
+  100%{opacity:1}   /* dissolved back in by ~600ms */
+}
+
+/* prev/next controls (MASTER CONTROL joins this strip in Module 5) */
+.omnitrix-controls button{
+  background:rgba(10,13,10,.7);
+  border:1px solid var(--metal-3);
+  color:var(--bone);
+  font-family:var(--hud);font-weight:600;font-size:11px;letter-spacing:.32em;
+  padding:10px 16px;cursor:pointer;
+  backdrop-filter:blur(8px);
+  transition:all .2s;
+}
+.omnitrix-controls button:hover{border-color:var(--green);color:var(--green);box-shadow:0 0 12px var(--green-mist)}
+.omni-index{
+  color:var(--green);font-family:var(--hud);font-weight:700;font-size:11px;letter-spacing:.36em;
+  padding:0 14px;min-width:80px;text-align:center;
+}
+.era-pill:focus-visible,
+.omnitrix-controls button:focus-visible{
+  outline:2px solid var(--green-hot);outline-offset:4px;
+  box-shadow:0 0 0 4px rgba(79,219,31,.18),0 0 18px var(--green-mist);
+}
+
+/* Module 3 — right-side alien data panel */
+.omnitrix-panel{
+  width:min(30vw,360px);
+  display:flex;flex-direction:column;gap:9px;
+  opacity:0;transform:translateY(10px);
+  transition:opacity .5s, transform .5s;
+}
+body.viewing-omnitrix .omnitrix-panel{opacity:1;transform:none;transition-delay:.6s}
+.op-name{
+  font-family:var(--display);font-size:clamp(26px,4.4vmin,46px);line-height:.95;
+  color:var(--bone);text-shadow:0 0 18px var(--green-mist);
+}
+.op-sub{
+  font-family:var(--hud);font-weight:600;font-size:12px;letter-spacing:.26em;
+  color:var(--green);text-transform:uppercase;
+}
+.op-divider{
+  height:1px;margin:5px 0;
+  background:linear-gradient(90deg,var(--green),transparent);
+  box-shadow:0 0 8px var(--green-mist);
+}
+.op-bio{font-family:var(--hud);font-size:13px;line-height:1.55;color:var(--bone);opacity:.85}
+.op-quote{
+  font-family:var(--hud);font-style:italic;font-size:13px;line-height:1.5;
+  color:var(--green-hot);opacity:.92;
+  border-left:2px solid var(--green-deep);padding-left:12px;
+}
+.op-stat{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.op-stat .row{font-family:var(--hud);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.op-stat .row .k{color:var(--green);font-weight:700;margin-right:10px}
+.op-stat .row .v{color:var(--bone)}
+.omnitrix-panel .engage-btn{align-self:flex-start;margin-top:16px}
+@media (max-width:1024px){
+  .omnitrix-panel{width:min(92vw,440px);text-align:center;align-items:center}
+  .op-quote{border-left:none;padding-left:0}
+  .omnitrix-panel .engage-btn{align-self:center}
+}
+
+/* Bottom controls strip (prev/next + MASTER CONTROL — filled by later modules) */
+.omnitrix-controls{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  z-index:9;display:flex;align-items:center;gap:14px;
+  opacity:0;transition:opacity .5s;
+}
+body.viewing-omnitrix .omnitrix-controls{opacity:1;transition-delay:.7s}
+
+/* Locked-tab HUD flash */
+.hud-flash{
+  position:fixed;left:50%;top:46%;transform:translate(-50%,-50%) scale(.92);
+  z-index:55;pointer-events:none;text-align:center;
+  background:rgba(5,8,5,.82);
+  border:1px solid var(--green);
+  backdrop-filter:blur(8px);
+  padding:18px 36px;
+  clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+  opacity:0;
+  box-shadow:0 0 28px var(--green-mist), inset 0 0 18px var(--green-mist);
+}
+.hud-flash.show{animation:hudFlash 1.85s ease-out forwards}
+@keyframes hudFlash{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.92)}
+  10%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  80%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.03)}
+}
+.hud-flash .l1{
+  font-family:var(--hud);font-weight:700;font-size:14px;letter-spacing:.4em;
+  color:var(--green);text-transform:uppercase;
+  text-shadow:0 0 12px var(--green-mist);
+}
+.hud-flash .l2{
+  font-family:var(--hud);font-weight:500;font-size:11px;letter-spacing:.18em;
+  color:var(--bone);opacity:.78;margin-top:8px;text-transform:uppercase;
+}
+@media (max-width:520px){
+  .era-selector{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
+  .era-pill{padding:12px 10px;font-size:10px;letter-spacing:.2em;text-align:center}
+  .omnitrix-page{padding:74px 16px 96px}
+  .hud-flash .l1{font-size:12px;letter-spacing:.28em}
+  .hud-flash .l2{font-size:9px;letter-spacing:.14em}
 }
 
 /* Suppress transitions/animations during initial deep-link boot so we don't flash through states */
@@ -1461,6 +1682,59 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
   <button id="nextAlien" aria-label="Next alien">ROTATE ▶</button>
 </div>
 
+<!-- ═════════ Omnitrix Archive — era-tabbed alien showcase ═════════ -->
+<section class="omnitrix-page" id="omnitrixPage" aria-hidden="true" inert>
+  <div class="era-selector" id="eraSelector" role="tablist" aria-label="Omnitrix era">
+    <button class="era-pill" type="button" role="tab" data-era="ben10" aria-selected="false">BEN 10</button>
+    <button class="era-pill active" type="button" role="tab" data-era="alien-force" aria-selected="true">ALIEN FORCE</button>
+    <button class="era-pill" type="button" role="tab" data-era="ultimate-alien" aria-selected="false">ULTIMATE ALIEN</button>
+    <button class="era-pill locked" type="button" data-era="omniverse" aria-disabled="true" title="Coming with the full reboot roster">OMNIVERSE</button>
+  </div>
+
+  <div class="omnitrix-stage" id="omnitrixStage">
+    <div class="omnitrix-watch-area" id="omnitrixWatchArea">
+      <div class="omnitrix-watch--big" id="omnitrixWatch">
+        <div class="body-ring">
+          <div class="bezel"></div>
+          <div class="notches"></div>
+          <div class="rim-light n"></div>
+          <div class="rim-light e"></div>
+          <div class="rim-light s"></div>
+          <div class="rim-light w"></div>
+          <div class="selector-dot"></div>
+          <div class="face-mount">
+            <div class="face">
+              <img class="omni-silhouette" id="omniSilhouette" src="" alt="" draggable="false">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="omnitrix-panel" id="omnitrixPanel">
+      <div class="op-name" id="opName"></div>
+      <div class="op-sub" id="opSub"></div>
+      <div class="op-divider"></div>
+      <p class="op-bio" id="opBio" hidden></p>
+      <blockquote class="op-quote" id="opQuote" hidden></blockquote>
+      <div class="op-stat">
+        <div class="row"><span class="k">POWERS</span><span class="v" id="opPowers"></span></div>
+        <div class="row"><span class="k">DEBUT</span><span class="v" id="opDebut"></span></div>
+      </div>
+      <button class="engage-btn" id="omniEngage" type="button">ENGAGE TRANSFORM</button>
+    </div>
+  </div>
+</section>
+
+<!-- Omnitrix bottom controls (MASTER CONTROL joins in Module 5) -->
+<div class="omnitrix-controls" id="omnitrixControls" aria-hidden="true" inert>
+  <button id="omniPrev" type="button" aria-label="Previous alien">◀ TWIST</button>
+  <span class="omni-index" id="omniIndex">01 / 13</span>
+  <button id="omniNext" type="button" aria-label="Next alien">TWIST ▶</button>
+</div>
+
+<!-- Locked-tab HUD flash -->
+<div class="hud-flash" id="hudFlash" aria-hidden="true"><div class="l1"></div><div class="l2"></div></div>
+
 <!-- Transform cinematic overlay -->
 <div class="transform-stage" id="transformStage" aria-hidden="true" inert>
   <div class="transform-ring"></div>
@@ -1613,6 +1887,10 @@ const aliensPage = document.getElementById('aliensPage');
 const dialControls = document.getElementById('dialControls');
 const transformStage = document.getElementById('transformStage');
 const transformDismiss = document.getElementById('transformDismiss');
+const omnitrixPage = document.getElementById('omnitrixPage');
+const omnitrixControls = document.getElementById('omnitrixControls');
+const eraSelector = document.getElementById('eraSelector');
+const hudFlash = document.getElementById('hudFlash');
 const activationHint = document.querySelector('.hint');
 const focusableSelector = 'a[href], button, input, select, textarea, [role="button"], [tabindex]';
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1691,10 +1969,12 @@ function syncA11yState(){
   const isIntroVisible = isIntroGateVisible || isIntroCrawlVisible;
   const isRevealed = body.classList.contains('revealed');
   const isViewingAliens = body.classList.contains('viewing-aliens');
+  const isViewingOmnitrix = body.classList.contains('viewing-omnitrix');
   const isTransforming = body.classList.contains('transforming');
   const isWatchVisible = !isRevealed && !isIntroVisible;
-  const isHeroVisible = isRevealed && !isViewingAliens && !isTransforming && !isIntroVisible;
+  const isHeroVisible = isRevealed && !isViewingAliens && !isViewingOmnitrix && !isTransforming && !isIntroVisible;
   const isAliensVisible = isViewingAliens && !isTransforming && !isIntroVisible;
+  const isOmnitrixVisible = isViewingOmnitrix && !isTransforming && !isIntroVisible;
   const isCrawlReplayVisible = !isTransforming && !isIntroVisible && !body.classList.contains('intro-boot');
 
   setElementActive(introGate, isIntroGateVisible);
@@ -1709,8 +1989,10 @@ function syncA11yState(){
   setElementActive(crawlReplay, isCrawlReplayVisible);
   setElementActive(aliensPage, isAliensVisible);
   setElementActive(dialControls, isAliensVisible);
-  setElementActive(backBtn, isAliensVisible);
+  setElementActive(backBtn, isAliensVisible || isOmnitrixVisible);
   setElementActive(aliensHeader, isAliensVisible);
+  setElementActive(omnitrixPage, isOmnitrixVisible);
+  setElementActive(omnitrixControls, isOmnitrixVisible);
   setElementActive(transformStage, isTransforming);
   updateVoiceLifecycle();
 }
@@ -1750,7 +2032,7 @@ function storeIntroSeen(){
 
 function shouldBypassIntro(){
   const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return reducedMotion || hasSeenIntro() || window.location.hash === '#aliens';
+  return reducedMotion || hasSeenIntro() || window.location.hash === '#aliens' || window.location.hash === '#omnitrix';
 }
 
 function clearIntroTimers(){
@@ -1936,6 +2218,67 @@ const ALIENS = [
   { id:'upgrade',     name:'UPGRADE',     short:'UPG',    species:'Galvanic Mechamorph',planet:'Galvan B',      powers:'Tech Merging',           debut:'S1 · E08', img:'assets/aliens/upgrade.png' },
   { id:'ghostfreak',  name:'GHOSTFREAK',  short:'GHOST',  species:'Ectonurite',         planet:'Anur Phaetos',  powers:'Intangibility',          debut:'S1 · E10', img:'assets/aliens/ghostfreak.png' }
 ];
+
+/* ═════════ Omnitrix Archive rosters (PRD: omnitrix-archive.md · Module 4) ═════════
+   Shared schema: id, name, short, species, planet, powers, debut, img, bio?, benQuote?
+   Phase A ships bio/benQuote as null — populated per era in Phase B.
+   File ids match alien ids 1:1. Founding 10 reused via spread (no data duplication). */
+
+// BEN 10 — founding 10 (spread from ALIENS) + 12 later OG unlocks = 22
+const OG_ALIENS_EXTENDED = [
+  ...ALIENS,
+  { id:'cannonbolt',    name:'CANNONBOLT',    short:'BALL',  species:'Arburian Pelarota',    planet:'Arburia',          powers:'Rolling / Armor',         debut:'OS · S2',                  img:'assets/aliens/cannonbolt.png',    bio:null, benQuote:null },
+  { id:'wildvine',      name:'WILDVINE',      short:'VINE',  species:'Florauna',             planet:'Flors Verdance',   powers:'Plant / Stretch',         debut:'OS · S1',                  img:'assets/aliens/wildvine.png',      bio:null, benQuote:null },
+  { id:'blitzwolfer',   name:'BLITZWOLFER',   short:'WOLF',  species:'Loboan',               planet:'Anur Transyl',     powers:'Sonic Howl / Agility',    debut:'OS · S3',                  img:'assets/aliens/blitzwolfer.png',   bio:null, benQuote:null },
+  { id:'snareoh',       name:'SNARE-OH',      short:'WRAP',  species:'Thep Khufan',          planet:'Anur Khufos',      powers:'Bandages / Stretch',      debut:'OS · S3',                  img:'assets/aliens/snareoh.png',       bio:null, benQuote:null },
+  { id:'frankenstrike', name:'FRANKENSTRIKE', short:'VOLT',  species:'Transylian',           planet:'Anur Transyl',     powers:'Electricity / Strength',  debut:'OS · S3',                  img:'assets/aliens/frankenstrike.png', bio:null, benQuote:null },
+  { id:'spitter',       name:'SPITTER',       short:'SPIT',  species:'Unknown',              planet:'Unknown',          powers:'Acid Slime / Aquatic',    debut:'OS · S3',                  img:'assets/aliens/spitter.png',       bio:null, benQuote:null },
+  { id:'ditto',         name:'DITTO',         short:'COPY',  species:'Splixson',             planet:'Hathor',           powers:'Self-Cloning',            debut:'OS · S2',                  img:'assets/aliens/ditto.png',         bio:null, benQuote:null },
+  { id:'upchuck',       name:'UPCHUCK',       short:'CHUCK', species:'Gourmand',             planet:'Peptos XI',        powers:'Swallow / Spit',          debut:'OS · S3',                  img:'assets/aliens/upchuck.png',       bio:null, benQuote:null },
+  { id:'articguana',    name:'ARCTIGUANA',    short:'FROST', species:'Polar Manzardill',     planet:"X'Nelli",          powers:'Ice Breath / Freeze',     debut:'OS · S3',                  img:'assets/aliens/articguana.png',    bio:null, benQuote:null },
+  { id:'buzzshock',     name:'BUZZSHOCK',     short:'BUZZ',  species:'Nosedeenian',          planet:'Nosedeen Quasar',  powers:'Electricity / Energy',    debut:'OS · S4',                  img:'assets/aliens/buzzshock.png',     bio:null, benQuote:null },
+  { id:'eyeguy',        name:'EYE GUY',       short:'EYES',  species:'Opticoid',             planet:'Sightra',          powers:'Eye Beams / Vision',      debut:'OS · S3',                  img:'assets/aliens/eyeguy.png',        bio:null, benQuote:null },
+  { id:'waybig',        name:'WAY BIG',       short:'BIG',   species:"To'kustar",            planet:'None (Cosmic Storm)', powers:'Cosmic Strength / Beams', debut:'Secret of the Omnitrix', img:'assets/aliens/waybig.png',        bio:null, benQuote:null }
+];
+
+// ALIEN FORCE — 13
+const ALIEN_FORCE_ALIENS = [
+  { id:'swampfire',    name:'SWAMPFIRE',    short:'SWAMP', species:'Methanosian',      planet:'Methanos',          powers:'Fire / Plant',            debut:'AF · S1',           img:'assets/aliens/alien-force/swampfire.png',    bio:null, benQuote:null },
+  { id:'echoecho',     name:'ECHO ECHO',    short:'ECHO',  species:'Sonorosian',       planet:'Sonorosia',         powers:'Sonic Scream / Cloning',  debut:'AF · S1',           img:'assets/aliens/alien-force/echoecho.png',     bio:null, benQuote:null },
+  { id:'humungousaur', name:'HUMUNGOUSAUR', short:'SAUR',  species:'Vaxasaurian',      planet:'Terradino',         powers:'Strength / Size',         debut:'AF · S1',           img:'assets/aliens/alien-force/humungousaur.png', bio:null, benQuote:null },
+  { id:'jetray',       name:'JETRAY',       short:'JET',   species:'Aerophibian',      planet:'Aeropela',          powers:'Flight / Neuroshock',     debut:'AF · S1',           img:'assets/aliens/alien-force/jetray.png',       bio:null, benQuote:null },
+  { id:'bigchill',     name:'BIG CHILL',    short:'CHILL', species:'Necrofriggian',    planet:'Kylmys',            powers:'Ice / Intangibility',     debut:'AF · S1',           img:'assets/aliens/alien-force/bigchill.png',     bio:null, benQuote:null },
+  { id:'chromastone',  name:'CHROMASTONE',  short:'CHROMA',species:'Crystalsapien',    planet:'Petropia',          powers:'Energy Absorb / Beams',   debut:'AF · S1',           img:'assets/aliens/alien-force/chromastone.png',  bio:null, benQuote:null },
+  { id:'brainstorm',   name:'BRAINSTORM',   short:'BRAIN', species:'Cerebrocrustacean',planet:'Encephalonus IV',   powers:'Genius / Electrokinesis', debut:'AF · S1',           img:'assets/aliens/alien-force/brainstorm.png',   bio:null, benQuote:null },
+  { id:'spidermonkey', name:'SPIDERMONKEY', short:'SPIDR', species:'Arachnichimp',     planet:'Aranhaschimmia',    powers:'Webbing / Agility',       debut:'AF · S1',           img:'assets/aliens/alien-force/spidermonkey.png', bio:null, benQuote:null },
+  { id:'goop',         name:'GOOP',         short:'GOOP',  species:'Polymorph',        planet:'Viscosia',          powers:'Slime / Shapeshift',      debut:'AF · S1',           img:'assets/aliens/alien-force/goop.png',         bio:null, benQuote:null },
+  { id:'alienx',       name:'ALIEN X',      short:'X',     species:'Celestialsapien',  planet:'Forge of Creation', powers:'Reality Warping',         debut:'AF · S2',           img:'assets/aliens/alien-force/alienx.png',       bio:null, benQuote:null },
+  { id:'lodestar',     name:'LODESTAR',     short:'STAR',  species:'Biosovortian',     planet:'Unknown',           powers:'Magnetism',               debut:'AF · S3',           img:'assets/aliens/alien-force/lodestar.png',     bio:null, benQuote:null },
+  { id:'nanomech',     name:'NANOMECH',     short:'NANO',  species:'Unknown (hybrid)', planet:'None',              powers:'Shrinking / Energy Blast',debut:'AF · Alien Swarm',  img:'assets/aliens/alien-force/nanomech.png',     bio:null, benQuote:null },
+  { id:'rath',         name:'RATH',         short:'RATH',  species:'Appoplexian',      planet:'Appoplexia',        powers:'Strength / Rage',         debut:'AF · S3',           img:'assets/aliens/alien-force/rath.png',         bio:null, benQuote:null }
+];
+
+// ULTIMATE ALIEN — 11
+const ULTIMATE_ALIEN_ALIENS = [
+  { id:'ampfibian',    name:'AMPFIBIAN',     short:'AMP',   species:'Amperi',           planet:'Tesslos',           powers:'Electricity / Aquatic',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/ampfibian.png',    bio:null, benQuote:null },
+  { id:'armodrillo',   name:'ARMODRILLO',    short:'DRILL', species:'Talpaedan',        planet:'Terraexcava',       powers:'Jackhammer / Strength',   debut:'UA · S1',           img:'assets/aliens/ultimate-alien/armodrillo.png',   bio:null, benQuote:null },
+  { id:'chamalien',    name:'CHAMALIEN',     short:'CHAM',  species:'Merlinisapien',    planet:'Unknown',           powers:'Camouflage / Agility',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/chamalien.png',    bio:null, benQuote:null },
+  { id:'clockwork',    name:'CLOCKWORK',     short:'CLOCK', species:'Chronosapien',     planet:'Unknown',           powers:'Time Control / Recall',   debut:'AF · S3',           img:'assets/aliens/ultimate-alien/clockwork.png',    bio:null, benQuote:null },
+  { id:'eatle',        name:'EATLE',         short:'EATLE', species:'Oryctini',         planet:'Coleop Terra',      powers:'Laser Blast / Strength',  debut:'UA · S1',           img:'assets/aliens/ultimate-alien/eatle.png',        bio:null, benQuote:null },
+  { id:'fasttrack',    name:'FASTTRACK',     short:'FAST',  species:'Citrakayah',       planet:'Chalybeas',         powers:'Super Speed',             debut:'UA · S1',           img:'assets/aliens/ultimate-alien/fasttrack.png',    bio:null, benQuote:null },
+  { id:'juryrigg',     name:'JURY RIGG',     short:'RIGG',  species:'Planchaküle',      planet:'Aul-Turrhen',       powers:'Sabotage / Repair',       debut:'UA · S3',           img:'assets/aliens/ultimate-alien/juryrigg.png',     bio:null, benQuote:null },
+  { id:'nrg',          name:'NRG',           short:'NRG',   species:'Prypiatosian-B',   planet:'Prypiatos',         powers:'Radiation / Armor',       debut:'UA · S1',           img:'assets/aliens/ultimate-alien/nrg.png',          bio:null, benQuote:null },
+  { id:'shocksquatch', name:'SHOCKSQUATCH',  short:'SHOCK', species:'Gimlinopithecus',  planet:'Pattersonea',       powers:'Electricity / Strength',  debut:'UA · S2',           img:'assets/aliens/ultimate-alien/shocksquatch.png', bio:null, benQuote:null },
+  { id:'terraspin',    name:'TERRASPIN',     short:'SPIN',  species:'Geochelone Aerio', planet:'Aldabra',           powers:'Wind / Flight',           debut:'UA · S1',           img:'assets/aliens/ultimate-alien/terraspin.png',    bio:null, benQuote:null },
+  { id:'waterhazard',  name:'WATER HAZARD',  short:'WATER', species:'Orishan',          planet:'Kiusana',           powers:'Water Blasts / Armor',    debut:'UA · S1',           img:'assets/aliens/ultimate-alien/waterhazard.png',  bio:null, benQuote:null }
+];
+
+// Era key → roster (consumed by the era selector; Omniverse is locked, no roster)
+const ERA_ROSTERS = {
+  'ben10':          OG_ALIENS_EXTENDED,
+  'alien-force':    ALIEN_FORCE_ALIENS,
+  'ultimate-alien': ULTIMATE_ALIEN_ALIENS
+};
 
 const HERO_VOICE_PHRASES = ['its hero time', 'hero time', 'activate'];
 const ALIEN_VOICE_ALIASES = {
@@ -2408,7 +2751,7 @@ function selectAlien(i){
   document.getElementById('alienIndex').textContent = String(currentAlien + 1).padStart(2, '0') + ' / 10';
   document.getElementById('dialPointer').style.setProperty('--pointer-angle', pointerAngle + 'deg');
 
-  document.getElementById('engageBtn').addEventListener('click', engageTransform);
+  document.getElementById('engageBtn').addEventListener('click', () => engageTransform());
 }
 
 let engageTimer = null;
@@ -2421,7 +2764,7 @@ function stopVoice(){
   }
 }
 
-function engageTransform(){
+function engageTransform(alien){
   clearTimeout(engageTimer);
   document.body.classList.remove('engaging', 'transforming');
   syncA11yState();
@@ -2429,7 +2772,7 @@ function engageTransform(){
   document.body.classList.add('engaging');
   engageTimer = setTimeout(() => document.body.classList.remove('engaging'), 1300);
 
-  const a = ALIENS[currentAlien];
+  const a = alien || ALIENS[currentAlien];
   const alienImg = document.getElementById('transformAlien');
   alienImg.src = a.img;
   alienImg.alt = a.name;
@@ -2465,7 +2808,10 @@ function dismissTransform(){
   syncA11yState();
   stopVoice();
   fadeOut(sndFlash, 250);
-  focusVisibleElement(document.getElementById('engageBtn'));
+  const engageReturn = document.body.classList.contains('viewing-omnitrix')
+    ? document.getElementById('omniEngage')
+    : document.getElementById('engageBtn');
+  focusVisibleElement(engageReturn);
 }
 
 document.getElementById('transformDismiss').addEventListener('click', dismissTransform);
@@ -2491,6 +2837,116 @@ function hideAliens(){
   focusVisibleElement(document.querySelector('.nav a[href="#aliens"]'));
 }
 
+// ───────── Omnitrix Archive ─────────
+const ERA_FLASH = {
+  omniverse: ['OMNIVERSE · LOCKED', 'Coming with the full reboot roster']
+};
+let currentEra = 'alien-force';   // default era on cold #omnitrix load
+let currentRoster = ALIEN_FORCE_ALIENS;
+let currentOmniIndex = 0;
+let hudFlashTimer;
+
+function showHudFlash(line1, line2){
+  hudFlash.querySelector('.l1').textContent = line1;
+  hudFlash.querySelector('.l2').textContent = line2;
+  hudFlash.classList.remove('show');
+  void hudFlash.offsetWidth;          // restart the animation
+  hudFlash.classList.add('show');
+  clearTimeout(hudFlashTimer);
+  hudFlashTimer = setTimeout(() => hudFlash.classList.remove('show'), 1850);
+}
+
+function selectEra(era){
+  if(era === 'omniverse'){
+    showHudFlash(...ERA_FLASH.omniverse);
+    return;
+  }
+  currentEra = era;
+  currentRoster = ERA_ROSTERS[era];
+  currentOmniIndex = 0;
+  document.querySelectorAll('.era-pill').forEach(pill => {
+    const isActive = pill.dataset.era === era;
+    pill.classList.toggle('active', isActive);
+    if(!pill.classList.contains('locked')) pill.setAttribute('aria-selected', String(isActive));
+  });
+  renderOmnitrixAlien();
+}
+
+eraSelector.addEventListener('click', e => {
+  const pill = e.target.closest('.era-pill');
+  if(pill) selectEra(pill.dataset.era);
+});
+eraSelector.addEventListener('keydown', e => {
+  if(e.key !== 'Enter' && e.key !== ' ') return;     // locked-tab flash on Enter/Space
+  const pill = e.target.closest('.era-pill');
+  if(!pill) return;
+  e.preventDefault();
+  selectEra(pill.dataset.era);
+});
+
+function showOmnitrix(){
+  if(document.body.classList.contains('viewing-omnitrix')) return;
+  document.body.classList.add('viewing-omnitrix');
+  selectEra(currentEra);
+  syncA11yState();
+  focusVisibleElement(document.querySelector('.era-pill.active'));
+}
+
+function hideOmnitrix(){
+  document.body.classList.remove('viewing-omnitrix', 'engaging', 'transforming');
+  syncA11yState();
+  stopVoice();
+  focusVisibleElement(document.querySelector('.nav a[href="#omnitrix"]') || document.querySelector('.nav a'));
+}
+
+// Paint the active alien's silhouette + index onto the big watch.
+function renderOmnitrixAlien(){
+  const a = currentRoster[currentOmniIndex];
+  if(!a) return;
+  const sil = document.getElementById('omniSilhouette');
+  sil.src = a.img;
+  sil.alt = a.name;
+  document.getElementById('omniIndex').textContent =
+    String(currentOmniIndex + 1).padStart(2, '0') + ' / ' + String(currentRoster.length).padStart(2, '0');
+
+  // side panel
+  document.getElementById('opName').textContent = a.name;
+  document.getElementById('opSub').textContent = a.species + ' · ' + a.planet;
+  document.getElementById('opPowers').textContent = a.powers;
+  document.getElementById('opDebut').textContent = a.debut;
+  const bioEl = document.getElementById('opBio');         // Phase B copy — hidden while null
+  bioEl.textContent = a.bio || '';
+  bioEl.hidden = !a.bio;
+  const quoteEl = document.getElementById('opQuote');
+  quoteEl.textContent = a.benQuote ? '“' + a.benQuote + '” — Ben' : '';
+  quoteEl.hidden = !a.benQuote;
+}
+
+// ENGAGE TRANSFORM — plays the existing cinematic for the selected omnitrix alien.
+document.getElementById('omniEngage').addEventListener('click', () => engageTransform(currentRoster[currentOmniIndex]));
+
+// Twist the dial one step. dir: +1 next, -1 prev.
+let omniTurning = false;
+function turnDial(dir){
+  const len = currentRoster.length;
+  if(omniTurning || len <= 1) return;
+  omniTurning = true;
+  const w = document.getElementById('omnitrixWatch');
+  w.setAttribute('data-rotating', dir > 0 ? 'forward' : 'back');
+  if(audioEnabled){ try{ sndDial.currentTime = 0; sndDial.play().catch(()=>{}); }catch(e){} }
+  setTimeout(() => {                       // swap silhouette mid-twist (~300ms)
+    currentOmniIndex = (currentOmniIndex + dir + len) % len;
+    renderOmnitrixAlien();
+  }, 300);
+  setTimeout(() => {                       // clear rotation state for the next turn (~600ms)
+    w.removeAttribute('data-rotating');
+    omniTurning = false;
+  }, 600);
+}
+
+document.getElementById('omniPrev').addEventListener('click', () => turnDial(-1));
+document.getElementById('omniNext').addEventListener('click', () => turnDial(1));
+
 renderDial();
 initVoiceControl();
 initIntro();
@@ -2510,7 +2966,8 @@ document.querySelectorAll('.nav a').forEach(link => {
 
 // Back button
 document.getElementById('backBtn').addEventListener('click', () => {
-  hideAliens();
+  if(document.body.classList.contains('viewing-omnitrix')){ hideOmnitrix(); }
+  else { hideAliens(); }
   history.replaceState(null, '', window.location.pathname);
 });
 
@@ -2531,10 +2988,29 @@ window.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ hideAliens(); history.replaceState(null, '', window.location.pathname); }
 });
 
+// Keyboard nav while viewing the Omnitrix Archive
+window.addEventListener('keydown', e => {
+  if(!document.body.classList.contains('viewing-omnitrix')) return;
+  if(document.body.classList.contains('transforming')){
+    if(e.key === 'Escape'){ e.preventDefault(); dismissTransform(); }
+    return;
+  }
+  if(e.key === 'ArrowLeft'){ e.preventDefault(); turnDial(-1); }
+  if(e.key === 'ArrowRight'){ e.preventDefault(); turnDial(1); }
+  if(e.key === 'Escape'){ hideOmnitrix(); history.replaceState(null, '', window.location.pathname); }
+});
+
 // Deep-link support: #aliens lands directly on the gallery, no intro
 if(window.location.hash === '#aliens'){
   document.body.classList.add('boot', 'revealed', 'viewing-aliens');
   selectAlien(0);
+  syncA11yState();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.body.classList.remove('boot');
+  }));
+}else if(window.location.hash === '#omnitrix'){
+  document.body.classList.add('boot', 'revealed', 'viewing-omnitrix');
+  selectEra('alien-force');
   syncA11yState();
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.body.classList.remove('boot');
