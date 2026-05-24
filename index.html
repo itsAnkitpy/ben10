@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="preload" href="audio/intro.mp3" as="audio">
 <style>
 @font-face{
   font-family:'Star Jedi';
@@ -1855,16 +1854,16 @@ body.boot *,body.boot *::before,body.boot *::after{transition:none !important;an
             <div class="tri up"></div>
             <div class="tri dn"></div>
             <div class="silhouettes" id="silhouettes">
-              <img src="assets/aliens/heatblast.png"   alt="" draggable="false">
-              <img src="assets/aliens/wildmutt.png"    alt="" draggable="false">
-              <img src="assets/aliens/diamondhead.png" alt="" draggable="false">
-              <img src="assets/aliens/xlr8.png"        alt="" draggable="false">
-              <img src="assets/aliens/greymatter.png"  alt="" draggable="false">
-              <img src="assets/aliens/fourarms.png"    alt="" draggable="false">
-              <img src="assets/aliens/stinkfly.png"    alt="" draggable="false">
-              <img src="assets/aliens/ripjaws.png"     alt="" draggable="false">
-              <img src="assets/aliens/upgrade.png"     alt="" draggable="false">
-              <img src="assets/aliens/ghostfreak.png"  alt="" draggable="false">
+              <img src="assets/aliens/heatblast.webp"   alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/wildmutt.webp"    alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/diamondhead.webp" alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/xlr8.webp"        alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/greymatter.webp"  alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/fourarms.webp"    alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/stinkfly.webp"    alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/ripjaws.webp"     alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/upgrade.webp"     alt="" draggable="false" loading="lazy">
+              <img src="assets/aliens/ghostfreak.webp"  alt="" draggable="false" loading="lazy">
             </div>
           </div>
         </div>
@@ -2039,10 +2038,12 @@ const sndActivation = new Audio('audio/omnitrix-activation.mp3');
 const sndFlash = new Audio('audio/omnitrix-flash.mp3');
 const sndDial = new Audio('audio/dial_turning.mp3');
 const sndIntro = new Audio('audio/intro.mp3');
-[sndActivation, sndFlash, sndDial, sndIntro].forEach(a => {
+[sndActivation, sndFlash, sndDial].forEach(a => {
   a.preload = 'auto';
   a.loop = false;
 });
+sndIntro.preload = 'none';
+sndIntro.loop = false;
 sndActivation.volume = 0.9;
 sndFlash.volume = 0.85;
 sndDial.volume = 0.7;
@@ -2447,16 +2448,16 @@ audioToggle.addEventListener('click', () => {
 // When present, it plays during the engage cinematic timed with the name slam.
 // Absent = silent — no error, no console warning.
 const ALIENS = [
-  { id:'heatblast',   name:'HEATBLAST',   short:'HEAT',   species:'Pyronite',           planet:'Pyros',         powers:'Fire / Flight',          debut:'S1 · E01', img:'assets/aliens/heatblast.png' },
-  { id:'wildmutt',    name:'WILDMUTT',    short:'WILD',   species:'Vulpimancer',        planet:'Vulpin',        powers:'Senses / Strength',      debut:'S1 · E01', img:'assets/aliens/wildmutt.png' },
-  { id:'diamondhead', name:'DIAMONDHEAD', short:'DIA',    species:'Petrosapien',        planet:'Petropia',      powers:'Crystal / Durability',   debut:'S1 · E01', img:'assets/aliens/diamondhead.png' },
-  { id:'xlr8',        name:'XLR8',        short:'XLR8',   species:'Kineceleran',        planet:'Kinet',         powers:'Super Speed',            debut:'S1 · E02', img:'assets/aliens/xlr8.png' },
-  { id:'greymatter',  name:'GREY MATTER', short:'GREY',   species:'Galvan',             planet:'Galvan Prime',  powers:'Genius Intellect',       debut:'S1 · E03', img:'assets/aliens/greymatter.png' },
-  { id:'fourarms',    name:'FOUR ARMS',   short:'4ARMS',  species:'Tetramand',          planet:'Khoros',        powers:'Strength / Shockwave',   debut:'S1 · E04', img:'assets/aliens/fourarms.png' },
-  { id:'stinkfly',    name:'STINKFLY',    short:'STINK',  species:'Lepidopterran',      planet:'Lepidopterra',  powers:'Flight / Slime',         debut:'S1 · E05', img:'assets/aliens/stinkfly.png' },
-  { id:'ripjaws',     name:'RIPJAWS',     short:'RIP',    species:'Piscciss Volann',    planet:'Piscciss',      powers:'Aquatic / Bite Force',   debut:'S1 · E07', img:'assets/aliens/ripjaws.png' },
-  { id:'upgrade',     name:'UPGRADE',     short:'UPG',    species:'Galvanic Mechamorph',planet:'Galvan B',      powers:'Tech Merging',           debut:'S1 · E08', img:'assets/aliens/upgrade.png' },
-  { id:'ghostfreak',  name:'GHOSTFREAK',  short:'GHOST',  species:'Ectonurite',         planet:'Anur Phaetos',  powers:'Intangibility',          debut:'S1 · E10', img:'assets/aliens/ghostfreak.png' }
+  { id:'heatblast',   name:'HEATBLAST',   short:'HEAT',   species:'Pyronite',           planet:'Pyros',         powers:'Fire / Flight',          debut:'S1 · E01', img:'assets/aliens/heatblast.webp' },
+  { id:'wildmutt',    name:'WILDMUTT',    short:'WILD',   species:'Vulpimancer',        planet:'Vulpin',        powers:'Senses / Strength',      debut:'S1 · E01', img:'assets/aliens/wildmutt.webp' },
+  { id:'diamondhead', name:'DIAMONDHEAD', short:'DIA',    species:'Petrosapien',        planet:'Petropia',      powers:'Crystal / Durability',   debut:'S1 · E01', img:'assets/aliens/diamondhead.webp' },
+  { id:'xlr8',        name:'XLR8',        short:'XLR8',   species:'Kineceleran',        planet:'Kinet',         powers:'Super Speed',            debut:'S1 · E02', img:'assets/aliens/xlr8.webp' },
+  { id:'greymatter',  name:'GREY MATTER', short:'GREY',   species:'Galvan',             planet:'Galvan Prime',  powers:'Genius Intellect',       debut:'S1 · E03', img:'assets/aliens/greymatter.webp' },
+  { id:'fourarms',    name:'FOUR ARMS',   short:'4ARMS',  species:'Tetramand',          planet:'Khoros',        powers:'Strength / Shockwave',   debut:'S1 · E04', img:'assets/aliens/fourarms.webp' },
+  { id:'stinkfly',    name:'STINKFLY',    short:'STINK',  species:'Lepidopterran',      planet:'Lepidopterra',  powers:'Flight / Slime',         debut:'S1 · E05', img:'assets/aliens/stinkfly.webp' },
+  { id:'ripjaws',     name:'RIPJAWS',     short:'RIP',    species:'Piscciss Volann',    planet:'Piscciss',      powers:'Aquatic / Bite Force',   debut:'S1 · E07', img:'assets/aliens/ripjaws.webp' },
+  { id:'upgrade',     name:'UPGRADE',     short:'UPG',    species:'Galvanic Mechamorph',planet:'Galvan B',      powers:'Tech Merging',           debut:'S1 · E08', img:'assets/aliens/upgrade.webp' },
+  { id:'ghostfreak',  name:'GHOSTFREAK',  short:'GHOST',  species:'Ectonurite',         planet:'Anur Phaetos',  powers:'Intangibility',          debut:'S1 · E10', img:'assets/aliens/ghostfreak.webp' }
 ];
 
 /* ═════════ Omnitrix Archive rosters (PRD: omnitrix-archive.md · Module 4) ═════════
@@ -2467,18 +2468,18 @@ const ALIENS = [
 // BEN 10 — founding 10 (spread from ALIENS) + 12 later OG unlocks = 22
 const OG_ALIENS_EXTENDED = [
   ...ALIENS,
-  { id:'cannonbolt',    name:'CANNONBOLT',    short:'BALL',  species:'Arburian Pelarota',    planet:'Arburia',          powers:'Rolling / Armor',         debut:'OS · S2',                  img:'assets/aliens/cannonbolt.png',    bio:null, benQuote:null },
-  { id:'wildvine',      name:'WILDVINE',      short:'VINE',  species:'Florauna',             planet:'Flors Verdance',   powers:'Plant / Stretch',         debut:'OS · S1',                  img:'assets/aliens/wildvine.png',      bio:null, benQuote:null },
-  { id:'blitzwolfer',   name:'BLITZWOLFER',   short:'WOLF',  species:'Loboan',               planet:'Anur Transyl',     powers:'Sonic Howl / Agility',    debut:'OS · S3',                  img:'assets/aliens/blitzwolfer.png',   bio:null, benQuote:null },
-  { id:'snareoh',       name:'SNARE-OH',      short:'WRAP',  species:'Thep Khufan',          planet:'Anur Khufos',      powers:'Bandages / Stretch',      debut:'OS · S3',                  img:'assets/aliens/snareoh.png',       bio:null, benQuote:null },
-  { id:'frankenstrike', name:'FRANKENSTRIKE', short:'VOLT',  species:'Transylian',           planet:'Anur Transyl',     powers:'Electricity / Strength',  debut:'OS · S3',                  img:'assets/aliens/frankenstrike.png', bio:null, benQuote:null },
-  { id:'spitter',       name:'SPITTER',       short:'SPIT',  species:'Unknown',              planet:'Unknown',          powers:'Acid Slime / Aquatic',    debut:'OS · S3',                  img:'assets/aliens/spitter.png',       bio:null, benQuote:null },
-  { id:'ditto',         name:'DITTO',         short:'COPY',  species:'Splixson',             planet:'Hathor',           powers:'Self-Cloning',            debut:'OS · S2',                  img:'assets/aliens/ditto.png',         bio:null, benQuote:null },
-  { id:'upchuck',       name:'UPCHUCK',       short:'CHUCK', species:'Gourmand',             planet:'Peptos XI',        powers:'Swallow / Spit',          debut:'OS · S3',                  img:'assets/aliens/upchuck.png',       bio:null, benQuote:null },
-  { id:'articguana',    name:'ARCTIGUANA',    short:'FROST', species:'Polar Manzardill',     planet:"X'Nelli",          powers:'Ice Breath / Freeze',     debut:'OS · S3',                  img:'assets/aliens/articguana.png',    bio:null, benQuote:null },
-  { id:'buzzshock',     name:'BUZZSHOCK',     short:'BUZZ',  species:'Nosedeenian',          planet:'Nosedeen Quasar',  powers:'Electricity / Energy',    debut:'OS · S4',                  img:'assets/aliens/buzzshock.png',     bio:null, benQuote:null },
-  { id:'eyeguy',        name:'EYE GUY',       short:'EYES',  species:'Opticoid',             planet:'Sightra',          powers:'Eye Beams / Vision',      debut:'OS · S3',                  img:'assets/aliens/eyeguy.png',        bio:null, benQuote:null },
-  { id:'waybig',        name:'WAY BIG',       short:'BIG',   species:"To'kustar",            planet:'None (Cosmic Storm)', powers:'Cosmic Strength / Beams', debut:'Secret of the Omnitrix', img:'assets/aliens/waybig.png',        bio:null, benQuote:null }
+  { id:'cannonbolt',    name:'CANNONBOLT',    short:'BALL',  species:'Arburian Pelarota',    planet:'Arburia',          powers:'Rolling / Armor',         debut:'OS · S2',                  img:'assets/aliens/cannonbolt.webp',    bio:null, benQuote:null },
+  { id:'wildvine',      name:'WILDVINE',      short:'VINE',  species:'Florauna',             planet:'Flors Verdance',   powers:'Plant / Stretch',         debut:'OS · S1',                  img:'assets/aliens/wildvine.webp',      bio:null, benQuote:null },
+  { id:'blitzwolfer',   name:'BLITZWOLFER',   short:'WOLF',  species:'Loboan',               planet:'Anur Transyl',     powers:'Sonic Howl / Agility',    debut:'OS · S3',                  img:'assets/aliens/blitzwolfer.webp',   bio:null, benQuote:null },
+  { id:'snareoh',       name:'SNARE-OH',      short:'WRAP',  species:'Thep Khufan',          planet:'Anur Khufos',      powers:'Bandages / Stretch',      debut:'OS · S3',                  img:'assets/aliens/snareoh.webp',       bio:null, benQuote:null },
+  { id:'frankenstrike', name:'FRANKENSTRIKE', short:'VOLT',  species:'Transylian',           planet:'Anur Transyl',     powers:'Electricity / Strength',  debut:'OS · S3',                  img:'assets/aliens/frankenstrike.webp', bio:null, benQuote:null },
+  { id:'spitter',       name:'SPITTER',       short:'SPIT',  species:'Unknown',              planet:'Unknown',          powers:'Acid Slime / Aquatic',    debut:'OS · S3',                  img:'assets/aliens/spitter.webp',       bio:null, benQuote:null },
+  { id:'ditto',         name:'DITTO',         short:'COPY',  species:'Splixson',             planet:'Hathor',           powers:'Self-Cloning',            debut:'OS · S2',                  img:'assets/aliens/ditto.webp',         bio:null, benQuote:null },
+  { id:'upchuck',       name:'UPCHUCK',       short:'CHUCK', species:'Gourmand',             planet:'Peptos XI',        powers:'Swallow / Spit',          debut:'OS · S3',                  img:'assets/aliens/upchuck.webp',       bio:null, benQuote:null },
+  { id:'articguana',    name:'ARCTIGUANA',    short:'FROST', species:'Polar Manzardill',     planet:"X'Nelli",          powers:'Ice Breath / Freeze',     debut:'OS · S3',                  img:'assets/aliens/articguana.webp',    bio:null, benQuote:null },
+  { id:'buzzshock',     name:'BUZZSHOCK',     short:'BUZZ',  species:'Nosedeenian',          planet:'Nosedeen Quasar',  powers:'Electricity / Energy',    debut:'OS · S4',                  img:'assets/aliens/buzzshock.webp',     bio:null, benQuote:null },
+  { id:'eyeguy',        name:'EYE GUY',       short:'EYES',  species:'Opticoid',             planet:'Sightra',          powers:'Eye Beams / Vision',      debut:'OS · S3',                  img:'assets/aliens/eyeguy.webp',        bio:null, benQuote:null },
+  { id:'waybig',        name:'WAY BIG',       short:'BIG',   species:"To'kustar",            planet:'None (Cosmic Storm)', powers:'Cosmic Strength / Beams', debut:'Secret of the Omnitrix', img:'assets/aliens/waybig.webp',        bio:null, benQuote:null }
 ];
 
 // ALIEN FORCE — 13
@@ -2937,7 +2938,7 @@ function renderDial(){
     slot.setAttribute('aria-label', a.name);
     slot.innerHTML = `
       <div class="slot-disc">
-        <img class="alien-art" src="${a.img}" alt="${a.name} silhouette" draggable="false">
+        <img class="alien-art" src="${a.img}" alt="${a.name} silhouette" draggable="false" loading="lazy">
       </div>
       <span class="slot-name">${a.short}</span>
     `;
