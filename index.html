@@ -840,6 +840,7 @@ body.revealed .nav .nav-item:nth-child(2){animation-delay:1.12s}
   font-family:var(--hud);font-size:10px;font-weight:600;letter-spacing:.4em;
   color:var(--green);opacity:0;
   transition:opacity .6s;
+  pointer-events:none; /* decorative only — never intercept taps (esp. over the bottom controls) */
 }
 body.revealed .hud-corner{opacity:.7;transition-delay:1.3s}
 .hud-corner.tl{top:24px;left:24px}
@@ -1146,9 +1147,9 @@ body.viewing-aliens .slot:nth-child(10){animation-delay:1.04s}
 .dial-controls{
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
   z-index:9;display:flex;align-items:center;gap:14px;
-  opacity:0;transition:opacity .5s;
+  opacity:0;pointer-events:none;transition:opacity .5s;
 }
-body.viewing-aliens .dial-controls{opacity:1;transition-delay:.7s}
+body.viewing-aliens .dial-controls{opacity:1;pointer-events:auto;transition-delay:.7s}
 .dial-controls button{
   background:rgba(10,13,10,.7);
   border:1px solid var(--metal-3);
@@ -1411,8 +1412,9 @@ body.timing-out-blast .timeout-flash{
   .replay button{font-size:10px;letter-spacing:.24em;padding:8px 12px 8px 30px}
   .replay button::before{left:10px;width:12px;height:12px}
 
-  /* Push REPLAY INTRO above the dial-controls when on the aliens page */
-  body.viewing-aliens .crawl-replay{bottom:62px}
+  /* Lift REPLAY INTRO clear of the bottom controls strip so it can't overlap ROTATE/TWIST */
+  body.viewing-aliens .crawl-replay{bottom:84px}
+  body.viewing-omnitrix .crawl-replay{bottom:84px}
   .crawl-replay button{font-size:9px;letter-spacing:.2em;padding:8px 12px}
 }
 
@@ -1645,9 +1647,9 @@ body.viewing-omnitrix .omnitrix-panel{opacity:1;transform:none;transition-delay:
   position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
   z-index:9;display:flex;align-items:center;justify-content:center;gap:14px;
   flex-wrap:wrap;max-width:94vw;
-  opacity:0;transition:opacity .5s;
+  opacity:0;pointer-events:none;transition:opacity .5s;
 }
-body.viewing-omnitrix .omnitrix-controls{opacity:1;transition-delay:.7s}
+body.viewing-omnitrix .omnitrix-controls{opacity:1;pointer-events:auto;transition-delay:.7s}
 
 /* Locked-tab HUD flash */
 .hud-flash{
@@ -1789,7 +1791,8 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;transition-delay:.7s}
   .intro-gate-panel{padding:22px 14px;width:min(580px, calc(100vw - 24px))}
   .intro-title{font-size:clamp(28px, 8vw, 50px)}
 
-  body.viewing-aliens .crawl-replay{bottom:56px}
+  body.viewing-aliens .crawl-replay{bottom:80px}
+  body.viewing-omnitrix .crawl-replay{bottom:80px}
 }
 
 /* ═══ Short screens / landscape phones ═══ */
