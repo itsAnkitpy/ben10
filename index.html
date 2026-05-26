@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>BEN 10 — It's Hero Time</title>
 <style>
 /* Self-hosted fonts — woff2, font-display:swap. (Was Google Fonts CDN + local TTF.) */
@@ -65,12 +65,18 @@
   --hud:'Chakra Petch', system-ui, sans-serif;
   --display:'Bungee', system-ui, sans-serif;
   --crawl-font:'Star Jedi', 'Star Jedi Hollow', var(--display);
+  /* Safe-area insets — 0 on non-notched devices, so calc() below is a no-op there */
+  --sat:env(safe-area-inset-top,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--void);color:var(--bone);font-family:var(--hud);overflow:hidden}
 body{
   min-height:100vh;
+  min-height:100dvh; /* dynamic viewport — avoids cutoff under mobile URL bars */
   display:grid;
   place-items:center;
   position:relative;
@@ -176,6 +182,7 @@ body.intro-exiting .crawl-replay{
   position:relative;z-index:2;
   width:min(860px, 92vw);
   height:100vh;
+  height:100dvh;
   perspective:420px;
   perspective-origin:50% 42%;
   display:flex;justify-content:center;
@@ -374,7 +381,7 @@ body.activated .hint{opacity:0;transition:opacity .3s}
 
 /* Top-right controls */
 .control-cluster{
-  position:fixed;top:24px;right:24px;z-index:50;
+  position:fixed;top:calc(24px + var(--sat));right:calc(24px + var(--sar));z-index:50;
   display:flex;align-items:flex-start;gap:10px;
 }
 .audio-toggle{
@@ -850,7 +857,7 @@ body.revealed .hud-corner{opacity:.7;transition-delay:1.3s}
 
 /* Replay watch — tiny omnitrix in the corner that re-triggers */
 .replay{
-  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  position:fixed;top:calc(24px + var(--sat));left:50%;transform:translateX(-50%);
   z-index:9;opacity:0;pointer-events:none;
   transition:opacity .5s;
 }
@@ -901,7 +908,7 @@ body.viewing-aliens .replay{opacity:0;pointer-events:none;transition-delay:0s}
 body.viewing-aliens .hud-corner{opacity:0;transition-delay:0s}
 
 .aliens-header{
-  position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  position:fixed;top:calc(24px + var(--sat));left:50%;transform:translateX(-50%);
   z-index:9;
   font-family:var(--hud);font-weight:600;font-size:12px;letter-spacing:.5em;
   color:var(--bone);opacity:0;
@@ -917,7 +924,7 @@ body.viewing-aliens .aliens-header{opacity:.85;transition-delay:.5s}
 .aliens-header b{color:var(--green);font-weight:700}
 
 .back-btn{
-  position:fixed;top:24px;left:24px;z-index:50;
+  position:fixed;top:calc(24px + var(--sat));left:calc(24px + var(--sal));z-index:50;
   background:rgba(10,13,10,.7);
   border:1px solid var(--metal-3);
   color:var(--bone);
@@ -1145,7 +1152,7 @@ body.viewing-aliens .slot:nth-child(10){animation-delay:1.04s}
 
 /* Bottom controls */
 .dial-controls{
-  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  position:fixed;bottom:calc(32px + var(--sab));left:50%;transform:translateX(-50%);
   z-index:9;display:flex;align-items:center;gap:14px;
   opacity:0;pointer-events:none;transition:opacity .5s;
 }
@@ -1231,7 +1238,7 @@ body.transforming .transform-ring.two{animation-delay:.18s;border-color:var(--gr
 
 .transform-alien{
   position:relative;z-index:2;
-  height:min(70vh, 680px);width:auto;max-width:90vw;
+  height:min(70vh, 680px);height:min(70dvh, 680px);width:auto;max-width:90vw;
   object-fit:contain;
   filter:drop-shadow(0 0 28px var(--green-hot)) drop-shadow(0 0 80px var(--green));
   opacity:0;transform:translateY(80px) scale(.65);
@@ -1267,7 +1274,7 @@ body.transforming .transform-name{animation:transformNameSlam .7s cubic-bezier(.
 }
 
 .transform-dismiss{
-  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:calc(36px + var(--sab));left:50%;transform:translateX(-50%);
   background:rgba(10,13,10,.7);
   border:1px solid var(--metal-3);
   color:var(--bone);
@@ -1316,8 +1323,16 @@ body.timing-out-blast .timeout-flash{
   body.timing-out-blast .timeout-flash{animation:none;opacity:.72}
 }
 
+/* Touch-target floor — keep every tap control ≥44px tall (WCAG 2.5.5 / Apple HIG) */
+.audio-toggle,.back-btn,.era-pill,.engage-btn,.transform-dismiss,
+.dial-controls button,.omnitrix-controls button,
+.crawl-replay button,.intro-begin,.intro-skip{
+  min-height:44px;display:inline-flex;align-items:center;justify-content:center;
+}
+.voice-toggle{min-height:44px}
+
 @media (max-width: 520px){
-  .control-cluster{top:14px;right:14px;gap:6px}
+  .control-cluster{top:calc(14px + var(--sat));right:calc(14px + var(--sar));gap:6px}
   .audio-toggle,.voice-toggle{font-size:9px;letter-spacing:.2em;padding:9px 10px}
   .voice-toggle{min-width:106px}
   .voice-feedback{min-width:166px;font-size:9px;letter-spacing:.2em}
@@ -1359,6 +1374,7 @@ body.timing-out-blast .timeout-flash{
   body.activated .tri.dn{transform:translate(-50%,0) rotate(180deg)}
   .hint{font-size:11px;letter-spacing:.32em;bottom:-56px}
   .hud-corner{font-size:8px}
+  .dial{--radius:calc(var(--dial-size) * 0.44)} /* push slot ring out so it clears the center ENGAGE button */
   .slot{width:72px;height:72px;margin:-36px 0 0 -36px}
   .slot-disc{width:54px;height:54px}
   .slot-disc svg{width:38px;height:38px}
@@ -1377,7 +1393,7 @@ body.timing-out-blast .timeout-flash{
 
   /* ── Dial bottom controls ── */
   .dial-controls{
-    bottom:18px;gap:8px;
+    bottom:calc(18px + var(--sab));gap:8px;
     flex-wrap:nowrap;
   }
   .dial-controls button{
@@ -1398,14 +1414,16 @@ body.timing-out-blast .timeout-flash{
   .transform-name{
     font-size:clamp(36px, 9vw, 80px);
     bottom:18%;
+    white-space:normal;line-height:.9;max-width:94vw; /* wrap long alien names instead of clipping */
   }
   .transform-dismiss{
-    bottom:20px;
+    bottom:calc(20px + var(--sab));
     font-size:10px;letter-spacing:.28em;
     padding:10px 16px;
   }
   .transform-alien{
     height:min(52vh, 420px);
+    height:min(52dvh, 420px);
   }
 
   /* ── Replay / Crawl Replay ── */
@@ -1413,8 +1431,9 @@ body.timing-out-blast .timeout-flash{
   .replay button::before{left:10px;width:12px;height:12px}
 
   /* Lift REPLAY INTRO clear of the bottom controls strip so it can't overlap ROTATE/TWIST */
-  body.viewing-aliens .crawl-replay{bottom:84px}
-  body.viewing-omnitrix .crawl-replay{bottom:84px}
+  body.viewing-aliens .crawl-replay{bottom:calc(84px + var(--sab))}
+  /* On phones the omnitrix panel CTA sits where REPLAY INTRO floats — hide it here so ENGAGE is tappable (still available via BACK → hero) */
+  body.viewing-omnitrix .crawl-replay{display:none}
   .crawl-replay button{font-size:9px;letter-spacing:.2em;padding:8px 12px}
 }
 
@@ -1644,7 +1663,7 @@ body.viewing-omnitrix .omnitrix-panel{opacity:1;transform:none;transition-delay:
 
 /* Bottom controls strip (prev/next + MASTER CONTROL — filled by later modules) */
 .omnitrix-controls{
-  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  position:fixed;bottom:calc(32px + var(--sab));left:50%;transform:translateX(-50%);
   z-index:9;display:flex;align-items:center;justify-content:center;gap:14px;
   flex-wrap:wrap;max-width:94vw;
   opacity:0;pointer-events:none;transition:opacity .5s;
@@ -1688,7 +1707,7 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;pointer-events:auto;transitio
 
   /* ── Omnitrix bottom controls ── */
   .omnitrix-controls{
-    bottom:16px;gap:8px;
+    bottom:calc(16px + var(--sab));gap:8px;
     flex-wrap:nowrap;
     max-width:100vw;
     padding:0 8px;
@@ -1750,7 +1769,7 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;pointer-events:auto;transitio
   .tagline{font-size:clamp(10px, 2.8vw, 13px);letter-spacing:.3em;gap:10px}
   .tagline::before,.tagline::after{width:24px}
 
-  .dial{--dial-size:min(86vmin, 320px)}
+  .dial{--dial-size:min(86vmin, 320px);--radius:calc(var(--dial-size) * 0.44)}
   .slot{width:58px;height:58px;margin:-29px 0 0 -29px}
   .slot-disc{width:44px;height:44px}
   .slot-name{font-size:7px;letter-spacing:.12em}
@@ -1777,7 +1796,7 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;pointer-events:auto;transitio
 
   .transform-name{font-size:clamp(28px, 8vw, 56px);bottom:22%}
   .transform-dismiss{bottom:14px;font-size:9px;padding:9px 14px;letter-spacing:.22em}
-  .transform-alien{height:min(44vh, 340px)}
+  .transform-alien{height:min(44vh, 340px);height:min(44dvh, 340px)}
 
   .aliens-header{font-size:8px;letter-spacing:.2em}
   .back-btn{font-size:10px;padding:8px 12px 8px 24px;letter-spacing:.22em}
@@ -1791,13 +1810,13 @@ body.viewing-omnitrix .omnitrix-controls{opacity:1;pointer-events:auto;transitio
   .intro-gate-panel{padding:22px 14px;width:min(580px, calc(100vw - 24px))}
   .intro-title{font-size:clamp(28px, 8vw, 50px)}
 
-  body.viewing-aliens .crawl-replay{bottom:80px}
-  body.viewing-omnitrix .crawl-replay{bottom:80px}
+  body.viewing-aliens .crawl-replay{bottom:calc(80px + var(--sab))}
+  body.viewing-omnitrix .crawl-replay{display:none}
 }
 
 /* ═══ Short screens / landscape phones ═══ */
 @media (max-height:500px){
-  .transform-alien{height:min(40vh, 260px)}
+  .transform-alien{height:min(40vh, 260px);height:min(40dvh, 260px)}
   .transform-name{font-size:clamp(24px, 6vw, 48px);bottom:14%}
   .transform-dismiss{bottom:10px;padding:8px 14px;font-size:9px}
 
